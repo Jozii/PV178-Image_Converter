@@ -17,15 +17,18 @@ namespace ImageConverter.BusinessLogic
     {
         private readonly IBitmapSourceLoader _loader;
         private IXMLLog _log;
-
-        public FormatConverter(IBitmapSourceLoader loader, IXMLLog log)
+        private readonly IFormatEncoder _encoder;
+        public FormatConverter(IBitmapSourceLoader loader, IXMLLog log, IFormatEncoder encoder)
         {
             if (loader == null)
                 throw new ArgumentNullException("loader");
             if (log == null) 
                 throw new ArgumentNullException("log");
+            if (encoder == null)
+                throw new ArgumentNullException("encoder");
             _loader = loader;
             _log = log;
+            _encoder = encoder;
         }
 
         private int Convert(string file, Format outputFormat, string outputFileName, int compression = 100, bool overwriteOutput = false)
@@ -42,19 +45,19 @@ namespace ImageConverter.BusinessLogic
                 switch (outputFormat)
                 {
                     case Format.JPEG:
-                        EncodeIntoJPEG(outputFileName, source, compression);
+                        _encoder.EncodeIntoJPEG(outputFileName, source, compression);
                         break;
                     case Format.GIF:
-                        EncodeIntoGIF(outputFileName, source);
+                        _encoder.EncodeIntoGIF(outputFileName, source);
                         break;
                     case Format.PNG:
-                        EncodeIntoPNG(outputFileName, source);
+                        _encoder.EncodeIntoPNG(outputFileName, source);
                         break;
                     case Format.Tiff:
-                        EncodeIntoTiff(outputFileName, source);
+                        _encoder.EncodeIntoTiff(outputFileName, source);
                         break;
                     case Format.BMP:
-                        EncodeIntoBMP(outputFileName, source);
+                        _encoder.EncodeIntoBMP(outputFileName, source);
                         break;
                     default:
                         throw new FormatException("outputFormat");
@@ -102,7 +105,15 @@ namespace ImageConverter.BusinessLogic
             int currentFile = 0;
             foreach (string file in files)
             {
-                string tempFileName = FileNameGenerator.UniqueFileName(outputFileName, ref i);
+                string tempFileName;
+                if (overwriteOutput)
+                {
+                    tempFileName = FileNameGenerator.GetFileName(outputFileName, ref i);
+                }
+                else
+                {
+                    tempFileName = FileNameGenerator.UniqueFileName(outputFileName, ref i);
+                }
                 if (Convert(file, outputFormat, tempFileName, compression) != 0)
                 {
                     list.Add(file);
@@ -117,84 +128,6 @@ namespace ImageConverter.BusinessLogic
             return list;
         }
 
-        private void EncodeIntoJPEG(string outputFile, BitmapSource source, int compression)
-        {
-            JpegBitmapEncoder encoder = new JpegBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(source));
-            using (FileStream fs = new FileStream(outputFile,FileMode.Create))
-            {
-                encoder.Save(fs);
-            }
-            if (compression != 100)
-            {
-                VaryQualityLevel(outputFile,compression);
-            }
-        }
-
-        private void EncodeIntoPNG(string outputFile, BitmapSource source)
-        {
-            PngBitmapEncoder encoder = new PngBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(source));
-            using (FileStream fs = new FileStream(outputFile, FileMode.Create))
-            {
-                encoder.Save(fs);
-            }
-        }
-
-        private void EncodeIntoTiff(string outputFile, BitmapSource source)
-        {
-            TiffBitmapEncoder encoder = new TiffBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(source));
-            using (FileStream fs = new FileStream(outputFile, FileMode.Create))
-            {
-                encoder.Save(fs);
-            }
-        }
-
-        private void EncodeIntoGIF(string outputFile, BitmapSource source)
-        {
-            GifBitmapEncoder encoder = new GifBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(source));
-            using (FileStream fs = new FileStream(outputFile, FileMode.Create))
-            {
-                encoder.Save(fs);
-            }
-        }
-
-        private void EncodeIntoBMP(string outputFile, BitmapSource source)
-        {
-            BmpBitmapEncoder encoder = new BmpBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(source));
-            using (FileStream fs = new FileStream(outputFile, FileMode.Create))
-            {
-                encoder.Save(fs);
-            }
-        }
-        private static void VaryQualityLevel(string file, int compression)
-        {
-            Bitmap bmp = new Bitmap(file);
-            ImageCodecInfo jpgEncoder = GetEncoder(ImageFormat.Jpeg);
-            System.Drawing.Imaging.Encoder myEncoder =
-                System.Drawing.Imaging.Encoder.Quality;
-            
-            EncoderParameters myEncoderParameters = new EncoderParameters(1);
-
-            EncoderParameter myEncoderParameter = new EncoderParameter(myEncoder, compression);
-            myEncoderParameters.Param[0] = myEncoderParameter;
-            bmp.Save(file, jpgEncoder, myEncoderParameters);
-        }
-        private static ImageCodecInfo GetEncoder(ImageFormat format)
-        {
-            ImageCodecInfo[] codecs = ImageCodecInfo.GetImageDecoders();
-
-            foreach (ImageCodecInfo codec in codecs)
-            {
-                if (codec.FormatID == format.Guid)
-                {
-                    return codec;
-                }
-            }
-            return null;
-        }
+       
     }
 }

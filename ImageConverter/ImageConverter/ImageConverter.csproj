@@ -68,8 +68,10 @@
     <Compile Include="BusinessLogic\Enumerations\KeepAspectRatio.cs" />
     <Compile Include="BusinessLogic\FileNameGenerator.cs" />
     <Compile Include="BusinessLogic\FormatConverter.cs" />
+    <Compile Include="BusinessLogic\FormatEncoder.cs" />
     <Compile Include="BusinessLogic\IBitmapSourceLoader.cs" />
     <Compile Include="BusinessLogic\IFormatConverter.cs" />
+    <Compile Include="BusinessLogic\IFormatEncoder.cs" />
     <Compile Include="BusinessLogic\ISizeConverter.cs" />
     <Compile Include="BusinessLogic\IXMLLog.cs" />
     <Compile Include="BusinessLogic\SizeConverter.cs" />

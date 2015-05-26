@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -14,19 +15,22 @@ namespace ImageConverter.BusinessLogic
     class SizeConverter : ISizeConverter
     {
         private readonly IBitmapSourceLoader _loader;
-        private IXMLLog _log;
-
-        public SizeConverter(IBitmapSourceLoader loader, IXMLLog log)
+        private readonly IXMLLog _log;
+        private readonly IFormatEncoder _encoder;
+        public SizeConverter(IBitmapSourceLoader loader, IXMLLog log, IFormatEncoder encoder)
         {
             if (loader == null)
                 throw new ArgumentNullException("loader");
             if (log == null)
                 throw new ArgumentNullException("log");
+            if (encoder == null)
+                throw new ArgumentNullException("encoder");
             _loader = loader;
             _log = log;
+            _encoder = encoder;
         }
-        public int Resize(string file, int width, int height, string outputFileName, KeepAspectRatio ratio, bool enlargeSmallerImages,
-            bool canOverwrite = false)
+        private int Resize(string file, int width, int height, string outputFileName, KeepAspectRatio ratio, bool enlargeSmallerImages,
+            bool overwriteOutput = false)
         {
             if (outputFileName == null)
                 throw new ArgumentNullException("outputFileName");
@@ -41,15 +45,48 @@ namespace ImageConverter.BusinessLogic
                 BitmapSource source = _loader.Load(file);
                 int oldWidth = (int) source.Width;
                 int oldHeight = (int) source.Height;
-                if (ratio == KeepAspectRatio.WIDTH)
+                if (!enlargeSmallerImages && oldWidth < width || oldHeight < height)
                 {
-                    
+                    return 0;
                 }
-                if (ratio == KeepAspectRatio.HEIGHT)
+                double aspectRatio;
+                switch (ratio)
                 {
-                    
+                    case KeepAspectRatio.HEIGHT:
+                        aspectRatio = ((double)oldWidth) / oldHeight;
+                        width = (int)(height * aspectRatio);
+                        break;
+                    case KeepAspectRatio.WIDTH:
+                        aspectRatio = ((double)oldHeight) / oldWidth;
+                        height = (int) (width*aspectRatio);
+                        break;
+                    case KeepAspectRatio.NONE:
+                        break;
+                    default:
+                        throw new ArgumentException("ratio");
                 }
                 BitmapFrame result = Resize(BitmapFrame.Create(source),width,height,BitmapScalingMode.HighQuality);
+                string extension = Path.GetExtension(file);
+                switch (extension)
+                {
+                    case ".jpeg":
+                        _encoder.EncodeIntoJPEG(outputFileName,result,100);
+                        break;
+                    case ".png":
+                        _encoder.EncodeIntoPNG(outputFileName,result);
+                        break;
+                    case ".tiff":
+                        _encoder.EncodeIntoTiff(outputFileName,result);
+                        break;
+                    case ".gif":
+                        _encoder.EncodeIntoGIF(outputFileName,result);
+                        break;
+                    case ".bmp":
+                        _encoder.EncodeIntoBMP(outputFileName,result);
+                        break;
+                    default:
+                        return 1;
+                }
                 return 0;
             }
             catch (FileNotFoundException)
@@ -65,10 +102,56 @@ namespace ImageConverter.BusinessLogic
         }
 
         public IEnumerable<string> Resize(IEnumerable<string> files, int width, int height, string outputFileName, KeepAspectRatio ratio,
-            bool enlargeSmallerImages, bool canOverwrite = false)
+            bool enlargeSmallerImages, bool overwriteOutput = false, BackgroundWorker bw = null)
         {
-
-            return null;
+            if (files == null)
+                throw new ArgumentNullException("files");
+            if (outputFileName == null)
+                throw new ArgumentNullException("outputFileName");
+            List<string> list = new List<string>();
+            int i = 0;
+            int max = files.Count();
+            if (max == 1)
+            {
+                if (!overwriteOutput)
+                {
+                    if (File.Exists(outputFileName))
+                        outputFileName = FileNameGenerator.UniqueFileName(outputFileName, ref i);
+                }
+                if (Resize(files.First(),width,height,outputFileName,ratio,enlargeSmallerImages,overwriteOutput) != 0)
+                {
+                    list.Add(files.First());
+                }
+                if (bw != null)
+                {
+                    bw.ReportProgress(100, files.First());
+                }
+                return list;
+            }
+            int currentFile = 0;
+            foreach (string file in files)
+            {
+                string tempFileName;
+                if (overwriteOutput)
+                {
+                    tempFileName = FileNameGenerator.GetFileName(outputFileName, ref i);
+                }
+                else
+                {
+                    tempFileName = FileNameGenerator.UniqueFileName(outputFileName, ref i);
+                }
+                if (Resize(files.First(), width, height, tempFileName, ratio, enlargeSmallerImages, overwriteOutput) != 0)
+                {
+                    list.Add(file);
+                }
+                currentFile++;
+                if (bw != null)
+                {
+                    int report = (int)((double)currentFile / max * 100.00);
+                    bw.ReportProgress(report, file);
+                }
+            }
+            return list;
         }
         private static BitmapFrame Resize(BitmapFrame photo, int width, int height,BitmapScalingMode scalingMode)
         {

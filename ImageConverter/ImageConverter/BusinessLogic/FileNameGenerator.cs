@@ -9,6 +9,13 @@ namespace ImageConverter.BusinessLogic
 {
     public static class FileNameGenerator
     {
+        public static string GetFileName(string fileName, ref int i)
+        {
+            string directory = Path.GetDirectoryName(fileName);
+            string fileNameWithoutExtension = directory + "\\" + Path.GetFileNameWithoutExtension(fileName);
+            string extension = Path.GetExtension(fileName);
+            return fileNameWithoutExtension + i++ + extension;
+        }
         public static string UniqueFileName(string fileName, ref int i)
         {
             string directory = Path.GetDirectoryName(fileName);

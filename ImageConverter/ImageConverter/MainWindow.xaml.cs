@@ -36,7 +36,7 @@ namespace ImageConverter
         {
             InitializeComponent();
             InitScreen();
-            _formatConverter = new FormatConverter(new BitmapSourceLoader(), _xmlLog);
+            _formatConverter = new FormatConverter(new BitmapSourceLoader(), _xmlLog, new FormatEncoder());
         }
         private void ButtonSelectFiles_Click(object sender, RoutedEventArgs e)
         {
@@ -97,8 +97,6 @@ namespace ImageConverter
             worker.ProgressChanged += BgWorkerProgressChanged;
             worker.RunWorkerCompleted += BgWorkerCompleted;
             worker.RunWorkerAsync(Tuple.Create(_files,(Format)OutputFormatComboBox.SelectedIndex, outputFileName,Int32.Parse(TextBoxJPEGCompression.Text),(bool)CheckBoxOverwriteExistingFiles.IsChecked));
-            //_formatConverter.Convert(_files, (Format) OutputFormatComboBox.SelectedIndex,outputFileName ,Int32.Parse(TextBoxJPEGCompression.Text),(bool)CheckBoxOverwriteExistingFiles.IsChecked);
-            
         }
 
         private void BgWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
