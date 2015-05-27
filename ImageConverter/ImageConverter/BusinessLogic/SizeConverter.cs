@@ -29,8 +29,7 @@ namespace ImageConverter.BusinessLogic
             _log = log;
             _encoder = encoder;
         }
-        private int Resize(string file, int width, int height, string outputFileName, KeepAspectRatio ratio, bool enlargeSmallerImages,
-            bool overwriteOutput = false)
+        private int Resize(string file, int width, int height, string outputFileName, KeepAspectRatio ratio, bool enlargeSmallerImages)
         {
             if (outputFileName == null)
                 throw new ArgumentNullException("outputFileName");
@@ -118,7 +117,7 @@ namespace ImageConverter.BusinessLogic
                     if (File.Exists(outputFileName))
                         outputFileName = FileNameGenerator.UniqueFileName(outputFileName, ref i);
                 }
-                if (Resize(files.First(),width,height,outputFileName,ratio,enlargeSmallerImages,overwriteOutput) != 0)
+                if (Resize(files.First(),width,height,outputFileName,ratio,enlargeSmallerImages) != 0)
                 {
                     list.Add(files.First());
                 }
@@ -140,7 +139,7 @@ namespace ImageConverter.BusinessLogic
                 {
                     tempFileName = FileNameGenerator.UniqueFileName(outputFileName, ref i);
                 }
-                if (Resize(files.First(), width, height, tempFileName, ratio, enlargeSmallerImages, overwriteOutput) != 0)
+                if (Resize(files.First(), width, height, tempFileName, ratio, enlargeSmallerImages) != 0)
                 {
                     list.Add(file);
                 }

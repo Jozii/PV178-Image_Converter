@@ -47,7 +47,7 @@
                 <Label x:Name="LabelHeight" Content="Height" HorizontalAlignment="Left" Margin="0,82,0,0" VerticalAlignment="Top"/>
                 <TextBox x:Name="TextBoxWidth" HorizontalAlignment="Left" Height="23" Margin="116,51,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="62"/>
                 <TextBox x:Name="TextBoxHeight" HorizontalAlignment="Left" Height="23" Margin="116,82,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="62"/>
-                <CheckBox Content="Can decrease bigger images" HorizontalAlignment="Left" Margin="10,108,0,0" VerticalAlignment="Top"/>
+                <CheckBox x:Name="CheckBoxEnlargeSmallerImages" Content="Can decrease bigger images" HorizontalAlignment="Left" Margin="10,108,0,0" VerticalAlignment="Top"/>
             </Grid>
         </GroupBox>
         <Label Content="Output file name" HorizontalAlignment="Left" Margin="10,372,0,0" VerticalAlignment="Top"/>

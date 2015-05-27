@@ -17,7 +17,9 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using ImageConverter.BusinessLogic;
 using ImageConverter.BusinessLogic.Enumerations;
+using MessageBox = System.Windows.MessageBox;
 using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
+using SizeConverter = ImageConverter.BusinessLogic.SizeConverter;
 
 namespace ImageConverter
 {
@@ -30,13 +32,15 @@ namespace ImageConverter
         private string _outputDirectory;
         private Format _outputFormat;
         private KeepAspectRatio _keepAspectRatio;
-        private IXMLLog _xmlLog = new XMLLog();
-        private IFormatConverter _formatConverter;
+        private readonly IXMLLog _xmlLog = new XMLLog();
+        private readonly IFormatConverter _formatConverter;
+        private ISizeConverter _sizeConverter;
         public MainWindow()
         {
             InitializeComponent();
             InitScreen();
             _formatConverter = new FormatConverter(new BitmapSourceLoader(), _xmlLog, new FormatEncoder());
+            _sizeConverter = new SizeConverter(new BitmapSourceLoader(), _xmlLog, new FormatEncoder());
         }
         private void ButtonSelectFiles_Click(object sender, RoutedEventArgs e)
         {
@@ -72,6 +76,20 @@ namespace ImageConverter
 
         private void ConvertButton_Click(object sender, RoutedEventArgs e)
         {
+            if (FormatConversionRadioBox.IsChecked != null && (bool) FormatConversionRadioBox.IsChecked)
+            {
+                ConvertFormat();
+            }
+            else if (SizeConversionRadioBox.IsChecked != null && (bool) SizeConversionRadioBox.IsChecked)
+            {
+                ConvertSize();
+            }
+        }
+
+        
+
+        private void ConvertFormat()
+        {
             string outputFileName = _outputDirectory + "\\" + TextBoxOutputFileName.Text;
             switch (OutputFormatComboBox.SelectedIndex)
             {
@@ -96,8 +114,38 @@ namespace ImageConverter
             worker.DoWork += BgConvertType;
             worker.ProgressChanged += BgWorkerProgressChanged;
             worker.RunWorkerCompleted += BgWorkerCompleted;
-            worker.RunWorkerAsync(Tuple.Create(_files,(Format)OutputFormatComboBox.SelectedIndex, outputFileName,Int32.Parse(TextBoxJPEGCompression.Text),(bool)CheckBoxOverwriteExistingFiles.IsChecked));
+            worker.RunWorkerAsync(Tuple.Create(_files, (Format)OutputFormatComboBox.SelectedIndex, outputFileName, Int32.Parse(TextBoxJPEGCompression.Text), (bool)CheckBoxOverwriteExistingFiles.IsChecked));
         }
+        private void ConvertSize()
+        {
+            int width = 0;
+            int height = 0;
+            KeepAspectRatio ratio = (KeepAspectRatio)ComboBoxKeepAspectRatio.SelectedIndex;
+            switch (ratio)
+            {
+                case KeepAspectRatio.NONE:
+                    width = Int32.Parse(TextBoxWidth.Text);
+                    height = Int32.Parse(TextBoxHeight.Text);
+                    break;
+                case KeepAspectRatio.WIDTH:
+                    width = Int32.Parse(TextBoxWidth.Text);
+                    break;
+                case KeepAspectRatio.HEIGHT:
+                    height = Int32.Parse(TextBoxHeight.Text);
+                    break;
+            }
+            string outputFileName = _outputDirectory + "\\" + TextBoxOutputFileName.Text;
+            bool enlargeSmallerImages = CheckBoxEnlargeSmallerImages.IsChecked != null && (bool)  CheckBoxEnlargeSmallerImages.IsChecked;
+            bool overWriteOutput = CheckBoxOverwriteExistingFiles.IsChecked != null && (bool) CheckBoxOverwriteExistingFiles.IsChecked;
+            BackgroundWorker worker = new BackgroundWorker();
+            worker.WorkerReportsProgress = true;
+            worker.DoWork += BgConvertSize;
+            worker.ProgressChanged += BgWorkerProgressChanged;
+            worker.RunWorkerCompleted += BgWorkerCompleted;
+            worker.RunWorkerAsync(Tuple.Create(_files,width,height,outputFileName,ratio, enlargeSmallerImages,overWriteOutput));
+        }
+
+        
 
         private void BgWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
@@ -135,6 +183,22 @@ namespace ImageConverter
             var compression = args.Item4;
             var overwriteOutput = args.Item5;
             var result = _formatConverter.Convert(files, format, outputFileName, compression, overwriteOutput,bw);
+            e.Result = result;
+        }
+
+        private void BgConvertSize(object sender, DoWorkEventArgs e)
+        {
+            var bw = sender as BackgroundWorker;
+            var args = (Tuple<List<string>, int, int, string, KeepAspectRatio, bool, bool>) e.Argument;
+            var files = args.Item1;
+            int width = args.Item2;
+            int height = args.Item3;
+            string outputFileName = args.Item4;
+            KeepAspectRatio ratio = args.Item5;
+            bool enlargeSmallerImages = args.Item6;
+            bool overwriteOutput = args.Item7;
+            var result = _sizeConverter.Resize(files, width, height, outputFileName, ratio, enlargeSmallerImages,
+                overwriteOutput, bw);
             e.Result = result;
         }
 
