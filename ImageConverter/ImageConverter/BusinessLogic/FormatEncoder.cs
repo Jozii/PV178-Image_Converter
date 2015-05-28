@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 
@@ -19,6 +20,7 @@ namespace ImageConverter.BusinessLogic
             using (FileStream fs = new FileStream(outputFile, FileMode.Create))
             {
                 encoder.Save(fs);
+                Thread.Sleep(5);
             }
             if (compression != 100)
             {

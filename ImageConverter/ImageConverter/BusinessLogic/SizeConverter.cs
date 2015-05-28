@@ -44,19 +44,20 @@ namespace ImageConverter.BusinessLogic
                 BitmapSource source = _loader.Load(file);
                 int oldWidth = (int) source.Width;
                 int oldHeight = (int) source.Height;
-                if (!enlargeSmallerImages && oldWidth < width || oldHeight < height)
+                if (!enlargeSmallerImages && (oldWidth < width || oldHeight < height))
                 {
-                    return 0;
+                    width = oldWidth;
+                    height = oldHeight;
                 }
                 double aspectRatio;
                 switch (ratio)
                 {
                     case KeepAspectRatio.HEIGHT:
-                        aspectRatio = ((double)oldWidth) / oldHeight;
-                        width = (int)(height * aspectRatio);
+                        aspectRatio = ((double) oldWidth)/oldHeight;
+                        width = (int) (height*aspectRatio);
                         break;
                     case KeepAspectRatio.WIDTH:
-                        aspectRatio = ((double)oldHeight) / oldWidth;
+                        aspectRatio = ((double) oldHeight)/oldWidth;
                         height = (int) (width*aspectRatio);
                         break;
                     case KeepAspectRatio.NONE:
@@ -64,28 +65,30 @@ namespace ImageConverter.BusinessLogic
                     default:
                         throw new ArgumentException("ratio");
                 }
-                BitmapFrame result = Resize(BitmapFrame.Create(source),width,height,BitmapScalingMode.HighQuality);
+                BitmapFrame result = Resize(BitmapFrame.Create(source), width, height, BitmapScalingMode.HighQuality);
                 string extension = Path.GetExtension(file);
                 switch (extension)
                 {
                     case ".jpeg":
-                        _encoder.EncodeIntoJPEG(outputFileName,result,100);
+                    case ".jpg":
+                        _encoder.EncodeIntoJPEG(outputFileName, result, 100);
                         break;
                     case ".png":
-                        _encoder.EncodeIntoPNG(outputFileName,result);
+                        _encoder.EncodeIntoPNG(outputFileName, result);
                         break;
                     case ".tiff":
-                        _encoder.EncodeIntoTiff(outputFileName,result);
+                        _encoder.EncodeIntoTiff(outputFileName, result);
                         break;
                     case ".gif":
-                        _encoder.EncodeIntoGIF(outputFileName,result);
+                        _encoder.EncodeIntoGIF(outputFileName, result);
                         break;
                     case ".bmp":
-                        _encoder.EncodeIntoBMP(outputFileName,result);
+                        _encoder.EncodeIntoBMP(outputFileName, result);
                         break;
                     default:
                         return 1;
                 }
+                result = null;
                 return 0;
             }
             catch (FileNotFoundException)
@@ -97,6 +100,10 @@ namespace ImageConverter.BusinessLogic
                 // file is not an image
                 return 2;
             }
+            catch (OutOfMemoryException)
+            {
+                return 3;
+            }
            
         }
 
@@ -105,13 +112,18 @@ namespace ImageConverter.BusinessLogic
         {
             if (files == null)
                 throw new ArgumentNullException("files");
-            if (outputFileName == null)
+            if (string.IsNullOrEmpty(outputFileName))
                 throw new ArgumentNullException("outputFileName");
+            if (width < 0)
+                throw new ArgumentException("width");
+            if (height < 0) 
+                throw new ArgumentException("height");
             List<string> list = new List<string>();
             int i = 0;
             int max = files.Count();
             if (max == 1)
             {
+                outputFileName += Path.GetExtension(files.First());
                 if (!overwriteOutput)
                 {
                     if (File.Exists(outputFileName))
@@ -131,15 +143,16 @@ namespace ImageConverter.BusinessLogic
             foreach (string file in files)
             {
                 string tempFileName;
+                string extension = Path.GetExtension(file);
                 if (overwriteOutput)
                 {
-                    tempFileName = FileNameGenerator.GetFileName(outputFileName, ref i);
+                    tempFileName = FileNameGenerator.GetFileName(outputFileName + extension, ref i);
                 }
                 else
                 {
-                    tempFileName = FileNameGenerator.UniqueFileName(outputFileName, ref i);
+                    tempFileName = FileNameGenerator.UniqueFileName(outputFileName + extension, ref i);
                 }
-                if (Resize(files.First(), width, height, tempFileName, ratio, enlargeSmallerImages) != 0)
+                if (Resize(file, width, height, tempFileName, ratio, enlargeSmallerImages) != 0)
                 {
                     list.Add(file);
                 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.Remoting.Channels;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -34,7 +35,7 @@ namespace ImageConverter
         private KeepAspectRatio _keepAspectRatio;
         private readonly IXMLLog _xmlLog = new XMLLog();
         private readonly IFormatConverter _formatConverter;
-        private ISizeConverter _sizeConverter;
+        private readonly ISizeConverter _sizeConverter;
         public MainWindow()
         {
             InitializeComponent();
@@ -109,12 +110,15 @@ namespace ImageConverter
                     outputFileName += ".bmp";
                     break;
             }
-            BackgroundWorker worker = new BackgroundWorker();
-            worker.WorkerReportsProgress = true;
-            worker.DoWork += BgConvertType;
-            worker.ProgressChanged += BgWorkerProgressChanged;
-            worker.RunWorkerCompleted += BgWorkerCompleted;
-            worker.RunWorkerAsync(Tuple.Create(_files, (Format)OutputFormatComboBox.SelectedIndex, outputFileName, Int32.Parse(TextBoxJPEGCompression.Text), (bool)CheckBoxOverwriteExistingFiles.IsChecked));
+            using (BackgroundWorker worker = new BackgroundWorker())
+            {
+                worker.WorkerReportsProgress = true;
+                worker.DoWork += BgConvertType;
+                worker.ProgressChanged += BgWorkerProgressChanged;
+                worker.RunWorkerCompleted += BgWorkerCompleted;
+                worker.RunWorkerAsync(Tuple.Create(_files, (Format) OutputFormatComboBox.SelectedIndex, outputFileName,
+                    Int32.Parse(TextBoxJPEGCompression.Text), (bool) CheckBoxOverwriteExistingFiles.IsChecked));
+            }
         }
         private void ConvertSize()
         {
@@ -137,12 +141,15 @@ namespace ImageConverter
             string outputFileName = _outputDirectory + "\\" + TextBoxOutputFileName.Text;
             bool enlargeSmallerImages = CheckBoxEnlargeSmallerImages.IsChecked != null && (bool)  CheckBoxEnlargeSmallerImages.IsChecked;
             bool overWriteOutput = CheckBoxOverwriteExistingFiles.IsChecked != null && (bool) CheckBoxOverwriteExistingFiles.IsChecked;
-            BackgroundWorker worker = new BackgroundWorker();
-            worker.WorkerReportsProgress = true;
-            worker.DoWork += BgConvertSize;
-            worker.ProgressChanged += BgWorkerProgressChanged;
-            worker.RunWorkerCompleted += BgWorkerCompleted;
-            worker.RunWorkerAsync(Tuple.Create(_files,width,height,outputFileName,ratio, enlargeSmallerImages,overWriteOutput));
+            using (BackgroundWorker worker = new BackgroundWorker())
+            {
+                worker.WorkerReportsProgress = true;
+                worker.DoWork += BgConvertSize;
+                worker.ProgressChanged += BgWorkerProgressChanged;
+                worker.RunWorkerCompleted += BgWorkerCompleted;
+                worker.RunWorkerAsync(Tuple.Create(_files, width, height, outputFileName, ratio, enlargeSmallerImages,
+                    overWriteOutput));
+            }
         }
 
         
