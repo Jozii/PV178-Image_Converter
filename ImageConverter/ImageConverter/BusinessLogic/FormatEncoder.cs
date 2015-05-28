@@ -15,12 +15,14 @@ namespace ImageConverter.BusinessLogic
     {
         public void EncodeIntoJPEG(string outputFile, BitmapSource source, int compression)
         {
-            JpegBitmapEncoder encoder = new JpegBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(source));
+            
             using (FileStream fs = new FileStream(outputFile, FileMode.Create))
             {
+                JpegBitmapEncoder encoder = new JpegBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(source));
                 encoder.Save(fs);
-                Thread.Sleep(5);
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
             }
             if (compression != 100)
             {
@@ -36,6 +38,7 @@ namespace ImageConverter.BusinessLogic
             {
                 encoder.Save(fs);
             }
+            GC.WaitForPendingFinalizers();
         }
 
         public void EncodeIntoTiff(string outputFile, BitmapSource source)

@@ -88,7 +88,8 @@ namespace ImageConverter.BusinessLogic
                     default:
                         return 1;
                 }
-                result = null;
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
                 return 0;
             }
             catch (FileNotFoundException)
@@ -163,6 +164,8 @@ namespace ImageConverter.BusinessLogic
                     bw.ReportProgress(report, file);
                 }
             }
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
             return list;
         }
         private static BitmapFrame Resize(BitmapFrame photo, int width, int height,BitmapScalingMode scalingMode)
