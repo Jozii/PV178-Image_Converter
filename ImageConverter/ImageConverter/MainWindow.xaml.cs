@@ -77,6 +77,10 @@ namespace ImageConverter
 
         private void ConvertButton_Click(object sender, RoutedEventArgs e)
         {
+            if (FormatConversionRadioBox.IsChecked != true && SizeConversionRadioBox.IsChecked != true)
+            {
+                System.Windows.MessageBox.Show("Select either format or size conversion", "Select what to do", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
             if (FormatConversionRadioBox.IsChecked != null && (bool) FormatConversionRadioBox.IsChecked)
             {
                 ConvertFormat();

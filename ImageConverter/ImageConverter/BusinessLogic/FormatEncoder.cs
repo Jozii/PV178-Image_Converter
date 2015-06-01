@@ -13,20 +13,21 @@ namespace ImageConverter.BusinessLogic
 {
     public class FormatEncoder : IFormatEncoder
     {
-        public void EncodeIntoJPEG(string outputFile, BitmapSource source, int compression)
+        public void EncodeIntoJPEG(string inputFile, string outputFile, BitmapSource source, int compression)
         {
-            
-            using (FileStream fs = new FileStream(outputFile, FileMode.Create))
+            if (compression == 100)
             {
                 JpegBitmapEncoder encoder = new JpegBitmapEncoder();
                 encoder.Frames.Add(BitmapFrame.Create(source));
-                encoder.Save(fs);
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-            }
-            if (compression != 100)
+                using (FileStream fs = new FileStream(outputFile, FileMode.Create))
+                {
+                    encoder.Save(fs);
+                    GC.WaitForPendingFinalizers();
+                    GC.Collect();
+                }
+            }else
             {
-                VaryQualityLevel(outputFile, compression);
+                VaryQualityLevel(inputFile, outputFile, compression);
             }
         }
 
@@ -37,6 +38,8 @@ namespace ImageConverter.BusinessLogic
             using (FileStream fs = new FileStream(outputFile, FileMode.Create))
             {
                 encoder.Save(fs);
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
             }
             GC.WaitForPendingFinalizers();
         }
@@ -48,6 +51,8 @@ namespace ImageConverter.BusinessLogic
             using (FileStream fs = new FileStream(outputFile, FileMode.Create))
             {
                 encoder.Save(fs);
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
             }
         }
 
@@ -58,6 +63,8 @@ namespace ImageConverter.BusinessLogic
             using (FileStream fs = new FileStream(outputFile, FileMode.Create))
             {
                 encoder.Save(fs);
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
             }
         }
 
@@ -68,20 +75,22 @@ namespace ImageConverter.BusinessLogic
             using (FileStream fs = new FileStream(outputFile, FileMode.Create))
             {
                 encoder.Save(fs);
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
             }
         }
-        private static void VaryQualityLevel(string file, int compression)
+        private static void VaryQualityLevel(string inputFile, string outputFile, int compression)
         {
-            Bitmap bmp = new Bitmap(file);
+            Bitmap bmp = new Bitmap(inputFile);
             ImageCodecInfo jpgEncoder = GetEncoder(ImageFormat.Jpeg);
             System.Drawing.Imaging.Encoder myEncoder =
                 System.Drawing.Imaging.Encoder.Quality;
 
             EncoderParameters myEncoderParameters = new EncoderParameters(1);
 
-            EncoderParameter myEncoderParameter = new EncoderParameter(myEncoder, compression);
+            EncoderParameter myEncoderParameter = new EncoderParameter(myEncoder, (Int64)compression);
             myEncoderParameters.Param[0] = myEncoderParameter;
-            bmp.Save(file, jpgEncoder, myEncoderParameters);
+            bmp.Save(outputFile, jpgEncoder, myEncoderParameters);
         }
         private static ImageCodecInfo GetEncoder(ImageFormat format)
         {

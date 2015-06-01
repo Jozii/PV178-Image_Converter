@@ -45,7 +45,7 @@ namespace ImageConverter.BusinessLogic
                 switch (outputFormat)
                 {
                     case Format.JPEG:
-                        _encoder.EncodeIntoJPEG(outputFileName, source, compression);
+                        _encoder.EncodeIntoJPEG(file,outputFileName, source, compression);
                         break;
                     case Format.GIF:
                         _encoder.EncodeIntoGIF(outputFileName, source);
