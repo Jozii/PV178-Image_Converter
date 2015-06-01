@@ -11,12 +11,7 @@ C:\Users\Jozef Živčic\Documents\Visual Studio 2013\Projects\ImageConverter\Ima
 C:\Users\Jozef Živčic\Documents\Visual Studio 2013\Projects\ImageConverter\ImageConverter\ImageConverter\obj\Debug\ImageConverter.csproj.GenerateResource.Cache
 C:\Users\Jozef Živčic\Documents\Visual Studio 2013\Projects\ImageConverter\ImageConverter\ImageConverter\obj\Debug\ImageConverter.exe
 C:\Users\Jozef Živčic\Documents\Visual Studio 2013\Projects\ImageConverter\ImageConverter\ImageConverter\obj\Debug\ImageConverter.pdb
-C:\Users\Jozef Živčic\Documents\GitHub\PV178-Image_Converter\ImageConverter\ImageConverter\bin\Debug\ImageConverter.exe.config
 C:\Users\Jozef Živčic\Documents\GitHub\PV178-Image_Converter\ImageConverter\ImageConverter\obj\Debug\ImageConverter.exe
-C:\Users\Jozef Živčic\Documents\GitHub\PV178-Image_Converter\ImageConverter\ImageConverter\obj\Debug\ImageConverter.pdb
-C:\Users\Jozef Živčic\Documents\GitHub\PV178-Image_Converter\ImageConverter\ImageConverter\bin\Debug\ImageConverter.exe
-C:\Users\Jozef Živčic\Documents\GitHub\PV178-Image_Converter\ImageConverter\ImageConverter\bin\Debug\ImageConverter.pdb
-C:\Users\Jozef Živčic\Documents\GitHub\PV178-Image_Converter\ImageConverter\ImageConverter\obj\Debug\ImageConverter.csprojResolveAssemblyReference.cache
 C:\Users\Jozef Živčic\Documents\GitHub\PV178-Image_Converter\ImageConverter\ImageConverter\obj\Debug\MainWindow.baml
 C:\Users\Jozef Živčic\Documents\GitHub\PV178-Image_Converter\ImageConverter\ImageConverter\obj\Debug\MainWindow.g.cs
 C:\Users\Jozef Živčic\Documents\GitHub\PV178-Image_Converter\ImageConverter\ImageConverter\obj\Debug\App.g.cs
@@ -24,3 +19,8 @@ C:\Users\Jozef Živčic\Documents\GitHub\PV178-Image_Converter\ImageConverter\Im
 C:\Users\Jozef Živčic\Documents\GitHub\PV178-Image_Converter\ImageConverter\ImageConverter\obj\Debug\ImageConverter.g.resources
 C:\Users\Jozef Živčic\Documents\GitHub\PV178-Image_Converter\ImageConverter\ImageConverter\obj\Debug\ImageConverter.Properties.Resources.resources
 C:\Users\Jozef Živčic\Documents\GitHub\PV178-Image_Converter\ImageConverter\ImageConverter\obj\Debug\ImageConverter.csproj.GenerateResource.Cache
+C:\Users\Jozef Živčic\Documents\GitHub\PV178-Image_Converter\ImageConverter\ImageConverter\obj\Debug\ImageConverter.pdb
+C:\Users\Jozef Živčic\Documents\GitHub\PV178-Image_Converter\ImageConverter\ImageConverter\bin\Debug\ImageConverter.exe.config
+C:\Users\Jozef Živčic\Documents\GitHub\PV178-Image_Converter\ImageConverter\ImageConverter\bin\Debug\ImageConverter.exe
+C:\Users\Jozef Živčic\Documents\GitHub\PV178-Image_Converter\ImageConverter\ImageConverter\bin\Debug\ImageConverter.pdb
+C:\Users\Jozef Živčic\Documents\GitHub\PV178-Image_Converter\ImageConverter\ImageConverter\obj\Debug\ImageConverter.csprojResolveAssemblyReference.cache

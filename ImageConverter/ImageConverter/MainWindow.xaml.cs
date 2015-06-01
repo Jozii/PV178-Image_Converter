@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Remoting.Channels;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -20,7 +21,9 @@ using ImageConverter.BusinessLogic;
 using ImageConverter.BusinessLogic.Enumerations;
 using MessageBox = System.Windows.MessageBox;
 using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
+using Path = System.IO.Path;
 using SizeConverter = ImageConverter.BusinessLogic.SizeConverter;
+using TextBox = System.Windows.Forms.TextBox;
 
 namespace ImageConverter
 {
@@ -219,6 +222,7 @@ namespace ImageConverter
             TextBoxNumberOfSelectedFiles.Text = "0";
             TextBoxNumberOfSelectedFiles.IsReadOnly = true;
             TextBoxProcessedFile.IsReadOnly = true;
+            TextBoxOutputDirectory.IsReadOnly = true;
         }
 
         private void InitComboBoxes()
@@ -305,6 +309,30 @@ namespace ImageConverter
                 LabelHeight.Visibility = Visibility.Hidden;
                 TextBoxHeight.Visibility = Visibility.Hidden;
             }
+        }
+
+        private void PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = !IsTextAllowed(e.Text);
+        }
+
+        private bool IsTextAllowed(string text)
+        {
+            Regex regex = new Regex("[^0-9]+"); //regex that matches disallowed text
+            return !regex.IsMatch(text);
+        }
+
+        private void FileNamePreview(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = !IsTextAllowedInFileName(e.Text);
+            System.Windows.MessageBox.Show("This character is there not allowed (" + e.Text + ")","Cannot enter this character",MessageBoxButton.OK,MessageBoxImage.Information);
+        }
+
+        private bool IsTextAllowedInFileName(string text)
+        {
+            IEnumerable<char> list = Path.GetInvalidFileNameChars();
+            bool result = !(list.Contains(text[0]));
+            return result;
         }
     }
 }
