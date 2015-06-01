@@ -3,27 +3,17 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Runtime.Remoting.Channels;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Forms;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using ImageConverter.BusinessLogic;
 using ImageConverter.BusinessLogic.Enumerations;
 using MessageBox = System.Windows.MessageBox;
 using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
-using Path = System.IO.Path;
 using SizeConverter = ImageConverter.BusinessLogic.SizeConverter;
-using TextBox = System.Windows.Forms.TextBox;
 
 namespace ImageConverter
 {
@@ -34,8 +24,6 @@ namespace ImageConverter
     {
         private List<string> _files = new List<string>();
         private string _outputDirectory;
-        private Format _outputFormat;
-        private KeepAspectRatio _keepAspectRatio;
         private readonly IXMLLog _xmlLog = new XMLLog();
         private readonly IFormatConverter _formatConverter;
         private readonly ISizeConverter _sizeConverter;
@@ -80,10 +68,8 @@ namespace ImageConverter
 
         private void ConvertButton_Click(object sender, RoutedEventArgs e)
         {
-            if (FormatConversionRadioBox.IsChecked != true && SizeConversionRadioBox.IsChecked != true)
-            {
-                System.Windows.MessageBox.Show("Select either format or size conversion", "Select what to do", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
+            if (!ControlProperties())
+                return;
             if (FormatConversionRadioBox.IsChecked != null && (bool) FormatConversionRadioBox.IsChecked)
             {
                 ConvertFormat();
@@ -94,44 +80,65 @@ namespace ImageConverter
             }
         }
 
-        
+        private bool ControlProperties()
+        {
+            if (FormatConversionRadioBox.IsChecked != true && SizeConversionRadioBox.IsChecked != true)
+            {
+                MessageBox.Show("Select either format or size conversion", "Select what to do", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            if (FormatConversionRadioBox.IsChecked == true)
+            {
+                Format format = (Format) Enum.Parse(typeof (Format), OutputFormatComboBox.SelectedItem.ToString());
+                if (format == Format.JPEG && Int32.Parse(TextBoxJPEGCompression.Text) > 100)
+                {
+                    MessageBox.Show("Compression has to be mostly 100%", "Wrong compression", MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                    return false;
+                }
+            }
+            return true;
+        }
+
 
         private void ConvertFormat()
         {
             string outputFileName = _outputDirectory + "\\" + TextBoxOutputFileName.Text;
-            switch (OutputFormatComboBox.SelectedIndex)
+            Format format = (Format)Enum.Parse(typeof(Format), OutputFormatComboBox.SelectedItem.ToString());
+            switch (format)
             {
-                case 0:
+                case Format.JPEG:
                     outputFileName += ".jpeg";
                     break;
-                case 1:
+                case Format.PNG:
                     outputFileName += ".png";
                     break;
-                case 2:
+                case Format.Tiff:
                     outputFileName += ".tiff";
                     break;
-                case 3:
+                case Format.GIF:
                     outputFileName += ".gif";
                     break;
-                case 4:
+                case Format.BMP:
                     outputFileName += ".bmp";
                     break;
             }
             using (BackgroundWorker worker = new BackgroundWorker())
             {
+                int compression = Int32.Parse(TextBoxJPEGCompression.Text);
+                bool overwriteFiles = (bool)CheckBoxOverwriteExistingFiles.IsChecked;
                 worker.WorkerReportsProgress = true;
                 worker.DoWork += BgConvertType;
                 worker.ProgressChanged += BgWorkerProgressChanged;
                 worker.RunWorkerCompleted += BgWorkerCompleted;
-                worker.RunWorkerAsync(Tuple.Create(_files, (Format) OutputFormatComboBox.SelectedIndex, outputFileName,
-                    Int32.Parse(TextBoxJPEGCompression.Text), (bool) CheckBoxOverwriteExistingFiles.IsChecked));
+                worker.RunWorkerAsync(Tuple.Create(_files, format, outputFileName,
+                    compression, overwriteFiles));
             }
         }
         private void ConvertSize()
         {
             int width = 0;
             int height = 0;
-            KeepAspectRatio ratio = (KeepAspectRatio)ComboBoxKeepAspectRatio.SelectedIndex;
+            KeepAspectRatio ratio = (KeepAspectRatio)Enum.Parse(typeof(KeepAspectRatio), ComboBoxKeepAspectRatio.SelectedItem.ToString());
             switch (ratio)
             {
                 case KeepAspectRatio.NONE:
@@ -166,7 +173,7 @@ namespace ImageConverter
             var result = (List<string>) e.Result;
             if (result.Count == 0)
             {
-                System.Windows.MessageBox.Show("All selected files were converted","Conversion successful",MessageBoxButton.OK,MessageBoxImage.Information);
+                MessageBox.Show("All selected files were converted","Conversion successful",MessageBoxButton.OK,MessageBoxImage.Information);
             }
             else
             {
@@ -175,7 +182,7 @@ namespace ImageConverter
                 {
                     sb.Append(s + '\n');
                 }
-                System.Windows.MessageBox.Show("These files were not converted\n" + sb.ToString(),"Error in converting files",MessageBoxButton.OK,MessageBoxImage.Error);
+                MessageBox.Show("These files were not converted\n" + sb.ToString(),"Error in converting files",MessageBoxButton.OK,MessageBoxImage.Error);
             }
             TextBoxProcessedFile.Text = "";
             ProgressBarProgress.Value = 0;
@@ -227,21 +234,12 @@ namespace ImageConverter
 
         private void InitComboBoxes()
         {
-            OutputFormatComboBox.Items.Add("JPEG");
-            OutputFormatComboBox.Items.Add("PNG");
-            OutputFormatComboBox.Items.Add("Tiff");
-            OutputFormatComboBox.Items.Add("GIF");
-            OutputFormatComboBox.Items.Add("BMP");
+            OutputFormatComboBox.ItemsSource = Enum.GetValues(typeof (Format));
             OutputFormatComboBox.SelectedIndex = 0;
             TextBoxJPEGCompression.Visibility = Visibility.Visible;
             LabelJPEGCompression.Visibility = Visibility.Visible;
-            _outputFormat = Format.JPEG;
-
-            ComboBoxKeepAspectRatio.Items.Add("None");
-            ComboBoxKeepAspectRatio.Items.Add("Width");
-            ComboBoxKeepAspectRatio.Items.Add("Height");
+            ComboBoxKeepAspectRatio.ItemsSource = Enum.GetValues(typeof (KeepAspectRatio));
             ComboBoxKeepAspectRatio.SelectedIndex = 0;
-            _keepAspectRatio = KeepAspectRatio.NONE;
         }
 
         private void ButtonSelectDirectory_Click(object sender, RoutedEventArgs e)
@@ -318,14 +316,14 @@ namespace ImageConverter
 
         private bool IsTextAllowed(string text)
         {
-            Regex regex = new Regex("[^0-9]+"); //regex that matches disallowed text
+            Regex regex = new Regex("[^0-9]+");
             return !regex.IsMatch(text);
         }
 
         private void FileNamePreview(object sender, TextCompositionEventArgs e)
         {
             e.Handled = !IsTextAllowedInFileName(e.Text);
-            System.Windows.MessageBox.Show("This character is there not allowed (" + e.Text + ")","Cannot enter this character",MessageBoxButton.OK,MessageBoxImage.Information);
+            MessageBox.Show("This character is there not allowed (" + e.Text + ")","Cannot enter this character",MessageBoxButton.OK,MessageBoxImage.Information);
         }
 
         private bool IsTextAllowedInFileName(string text)
