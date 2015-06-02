@@ -11,6 +11,10 @@ namespace ImageConverter.BusinessLogic
     {
         public BitmapSource Load(string file)
         {
+            if (string.IsNullOrEmpty(file))
+            {
+                throw new ArgumentException("file");
+            }
             return new BitmapImage(new Uri(file));
         }
     }

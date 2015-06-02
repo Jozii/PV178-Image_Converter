@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -19,26 +17,44 @@ namespace ImageConverter.BusinessLogic
         private readonly IFormatEncoder _encoder;
         public SizeConverter(IBitmapSourceLoader loader, IXMLLog log, IFormatEncoder encoder)
         {
-            if (loader == null)
-                throw new ArgumentNullException("loader");
             if (log == null)
                 throw new ArgumentNullException("log");
-            if (encoder == null)
-                throw new ArgumentNullException("encoder");
-            _loader = loader;
             _log = log;
+            if (loader == null)
+            {
+                _log.Error("SizeConverter: loader is null");
+                throw new ArgumentNullException("loader");
+            }
+            if (encoder == null)
+            {
+                _log.Error("SizeConverter: encoder is null");
+                throw new ArgumentNullException("encoder");
+            }
+            _loader = loader;
             _encoder = encoder;
         }
-        private int Resize(string file, int width, int height, string outputFileName, KeepAspectRatio ratio, bool enlargeSmallerImages)
+        private bool Resize(string file, int width, int height, string outputFileName, KeepAspectRatio ratio, bool enlargeSmallerImages)
         {
             if (outputFileName == null)
+            {
+                _log.Error("Resize: outputFileName is null");
                 throw new ArgumentNullException("outputFileName");
+            }
             if (file == null)
+            {
+                _log.Error("Resize: file is null");
                 throw new ArgumentNullException("file");
+            }
             if (width < 0)
+            {
+                _log.Error("Resize: width is less than 0");
                 throw new ArgumentException("width");
+            }
             if (height < 0)
+            {
+                _log.Error("Resize: height is less than 0");
                 throw new ArgumentException("height");
+            }
             try
             {
                 BitmapSource source = _loader.Load(file);
@@ -71,7 +87,7 @@ namespace ImageConverter.BusinessLogic
                 {
                     case ".jpeg":
                     case ".jpg":
-                        _encoder.EncodeIntoJPEG(file,outputFileName, result, 100);
+                        _encoder.EncodeIntoJPEG(file, outputFileName, result, 100);
                         break;
                     case ".png":
                         _encoder.EncodeIntoPNG(outputFileName, result);
@@ -86,39 +102,57 @@ namespace ImageConverter.BusinessLogic
                         _encoder.EncodeIntoBMP(outputFileName, result);
                         break;
                     default:
-                        return 1;
+                        return false;
                 }
                 GC.WaitForPendingFinalizers();
                 GC.Collect();
-                return 0;
+                return true;
             }
-            catch (FileNotFoundException)
+            catch (FileNotFoundException ex)
             {
-                return 1;
+                _log.Error("Resize: File " + file + " was not found " + ex);
+                return false;
             }
-            catch (NotSupportedException)
+            catch (NotSupportedException ex)
             {
-                // file is not an image
-                return 2;
+                _log.Error("Resize: File " + file + " is not an image " + ex);
+                return false;
             }
-            catch (OutOfMemoryException)
+            catch (OutOfMemoryException ex)
             {
-                return 3;
+                _log.Error("Resize: Out of memory " + ex);
+                return false;
             }
-           
+            catch (Exception ex)
+            {
+                _log.Error("Resize: " + ex);
+                return false;
+            }
         }
 
         public IEnumerable<string> Resize(IEnumerable<string> files, int width, int height, string outputFileName, KeepAspectRatio ratio,
             bool enlargeSmallerImages, bool overwriteOutput = false, BackgroundWorker bw = null)
         {
             if (files == null)
+            {
+                _log.Error("Resize: files are null");
                 throw new ArgumentNullException("files");
+            }
             if (string.IsNullOrEmpty(outputFileName))
+            {
+                _log.Error("Resize: outputFileName is null or empty");
                 throw new ArgumentNullException("outputFileName");
+            }
             if (width < 0)
+            {
+                _log.Error("Resize: Width is less than zero");
                 throw new ArgumentException("width");
-            if (height < 0) 
+            }
+            if (height < 0)
+            {
+                _log.Error("Resize: Height is less than zero");
                 throw new ArgumentException("height");
+            }
             List<string> list = new List<string>();
             int i = 0;
             int max = files.Count();
@@ -130,7 +164,7 @@ namespace ImageConverter.BusinessLogic
                     if (File.Exists(outputFileName))
                         outputFileName = FileNameGenerator.UniqueFileName(outputFileName, ref i);
                 }
-                if (Resize(files.First(),width,height,outputFileName,ratio,enlargeSmallerImages) != 0)
+                if (!Resize(files.First(),width,height,outputFileName,ratio,enlargeSmallerImages))
                 {
                     list.Add(files.First());
                 }
@@ -153,7 +187,7 @@ namespace ImageConverter.BusinessLogic
                 {
                     tempFileName = FileNameGenerator.UniqueFileName(outputFileName + extension, ref i);
                 }
-                if (Resize(file, width, height, tempFileName, ratio, enlargeSmallerImages) != 0)
+                if (!Resize(file, width, height, tempFileName, ratio, enlargeSmallerImages))
                 {
                     list.Add(file);
                 }

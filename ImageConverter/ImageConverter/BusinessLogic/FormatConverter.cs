@@ -20,25 +20,43 @@ namespace ImageConverter.BusinessLogic
         private readonly IFormatEncoder _encoder;
         public FormatConverter(IBitmapSourceLoader loader, IXMLLog log, IFormatEncoder encoder)
         {
-            if (loader == null)
-                throw new ArgumentNullException("loader");
-            if (log == null) 
+            if (log == null)
+            {
                 throw new ArgumentNullException("log");
-            if (encoder == null)
-                throw new ArgumentNullException("encoder");
-            _loader = loader;
+            }
             _log = log;
+            if (loader == null)
+            {
+                _log.Error("FormatConverter: loader is null");
+                throw new ArgumentNullException("loader");
+            }
+            
+            if (encoder == null)
+            {
+                _log.Error("FormatConverter: encoder is null");
+                throw new ArgumentNullException("encoder");
+            }
+            _loader = loader;
             _encoder = encoder;
         }
 
-        private int Convert(string file, Format outputFormat, string outputFileName, int compression = 100, bool overwriteOutput = false)
+        private bool Convert(string file, Format outputFormat, string outputFileName, int compression = 100, bool overwriteOutput = false)
         {
-            if (outputFileName == null) 
+            if (outputFileName == null)
+            {
+                _log.Error("Convert: outputFileName is null");
                 throw new ArgumentNullException("outputFileName");
+            }
             if (file == null)
+            {
+                _log.Error("Convert: file is null");
                 throw new ArgumentNullException("file");
+            }
             if (compression < 0 || compression > 100)
+            {
+                _log.Error("Convert: compression limits");
                 throw new FormatException("compression");
+            }
             try
             {
                 BitmapSource source = _loader.Load(file);
@@ -62,26 +80,43 @@ namespace ImageConverter.BusinessLogic
                     default:
                         throw new FormatException("outputFormat");
                 }
-                return 0;
+                return true;
             }
-            catch (FileNotFoundException)
+            catch (FileNotFoundException ex)
             {
-                return 1;
+                _log.Error("Convert: file " + file + "was not found " + ex);
+                return false;
             }
-            catch (NotSupportedException)
+            catch (NotSupportedException ex)
             {
-                // file is not an image
-                return 2;
+                _log.Error("Convert: File " + file + " is not an image " + ex);
+                return false;
+            }
+            catch (OutOfMemoryException ex)
+            {
+                _log.Error("Convert: Out of memory " + ex);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _log.Error("Convert: " + ex);
+                return false;
             }
         }
         
         public IEnumerable<string> Convert(IEnumerable<string> files, Format outputFormat, string outputFileName,
             int compression = 100, bool overwriteOutput = false, BackgroundWorker bw = null)
         {
-            if (files == null) 
+            if (files == null)
+            {
+                _log.Error("Convert: Files are null");
                 throw new ArgumentNullException("files");
+            }
             if (outputFileName == null)
+            {
+                _log.Error("Convert: outputFileName is null");
                 throw new ArgumentNullException("outputFileName");
+            }
             List<string> list = new List<string>();
             int i = 0;
             int max = files.Count();
@@ -92,7 +127,7 @@ namespace ImageConverter.BusinessLogic
                     if (File.Exists(outputFileName))
                         outputFileName = FileNameGenerator.UniqueFileName(outputFileName, ref i);
                 }
-                if (Convert(files.First(), outputFormat, outputFileName, compression) != 0)
+                if (!Convert(files.First(), outputFormat, outputFileName, compression))
                 {
                     list.Add(files.First());
                 }
@@ -114,7 +149,7 @@ namespace ImageConverter.BusinessLogic
                 {
                     tempFileName = FileNameGenerator.UniqueFileName(outputFileName, ref i);
                 }
-                if (Convert(file, outputFormat, tempFileName, compression) != 0)
+                if (!Convert(file, outputFormat, tempFileName, compression))
                 {
                     list.Add(file);
                 }
@@ -127,7 +162,5 @@ namespace ImageConverter.BusinessLogic
             }
             return list;
         }
-
-       
     }
 }

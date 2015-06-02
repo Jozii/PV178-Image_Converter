@@ -207,6 +207,7 @@ namespace ImageConverter
         {
             string outputFileName = _outputDirectory + "\\" + TextBoxOutputFileName.Text;
             Format format = (Format)Enum.Parse(typeof(Format), OutputFormatComboBox.SelectedItem.ToString());
+            _xmlLog.Info("Convert format " + GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " to " + format.ToString());
             switch (format)
             {
                 case Format.JPEG:
@@ -247,12 +248,15 @@ namespace ImageConverter
                 case KeepAspectRatio.NONE:
                     width = Int32.Parse(TextBoxWidth.Text);
                     height = Int32.Parse(TextBoxHeight.Text);
+                    _xmlLog.Info("Convert size " + GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " to width: " + width + " and height " + height);
                     break;
                 case KeepAspectRatio.WIDTH:
                     width = Int32.Parse(TextBoxWidth.Text);
+                    _xmlLog.Info("Convert size " + GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " to width: " + width);
                     break;
                 case KeepAspectRatio.HEIGHT:
                     height = Int32.Parse(TextBoxHeight.Text);
+                    _xmlLog.Info("Convert size " + GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " height " + height);
                     break;
             }
             string outputFileName = _outputDirectory + "\\" + TextBoxOutputFileName.Text;
@@ -269,14 +273,13 @@ namespace ImageConverter
             }
         }
 
-        
-
         private void BgWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             var result = (List<string>) e.Result;
             if (result.Count == 0)
             {
                 MessageBox.Show("All selected files were converted","Conversion successful",MessageBoxButton.OK,MessageBoxImage.Information);
+                _xmlLog.Debug("All files were converted");
             }
             else
             {
@@ -286,6 +289,7 @@ namespace ImageConverter
                     sb.Append(s + '\n');
                 }
                 MessageBox.Show("These files were not converted\n" + sb.ToString(),"Error in converting files",MessageBoxButton.OK,MessageBoxImage.Error);
+                _xmlLog.Debug("Not converted files: " + GetFilesToString(result));
             }
             LabelProcessedFiles.Content = "No file";
             LabelPercents.Content = "0";
@@ -437,5 +441,16 @@ namespace ImageConverter
             bool result = !(list.Contains(text[0]));
             return result;
         }
+
+        private static string GetFilesToString(IEnumerable<string> list)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (string s in list)
+            {
+                sb.Append(Path.GetFileName(s) + " ");
+            }
+            return sb.ToString();
+        }
     }
+    
 }
