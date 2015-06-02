@@ -24,7 +24,7 @@ namespace ImageConverter
     {
         private List<string> _files = new List<string>();
         private string _outputDirectory;
-        private readonly IXMLLog _xmlLog = new XMLLog();
+        private readonly IXMLLog _xmlLog = new XMLLog("logging.log");
         private readonly IFormatConverter _formatConverter;
         private readonly ISizeConverter _sizeConverter;
         public MainWindow()
