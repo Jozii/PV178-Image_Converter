@@ -36,7 +36,7 @@
                 <ComboBox x:Name="OutputFormatComboBox" HorizontalAlignment="Left" Margin="101,23,0,0" VerticalAlignment="Top" Width="120" Grid.ColumnSpan="2" SelectionChanged="OutputFormatComboBox_SelectionChanged"/>
                 <Label Content="Output format" HorizontalAlignment="Left" Margin="0,23,0,0" VerticalAlignment="Top"/>
                 <Label x:Name="LabelJPEGCompression" Content="JPEG compression" HorizontalAlignment="Left" Margin="0,67,0,0" VerticalAlignment="Top"/>
-                <TextBox x:Name="TextBoxJPEGCompression" PreviewTextInput="PreviewTextInput" HorizontalAlignment="Left" Height="23" Margin="159,70,0,0" TextWrapping="Wrap" Text="100" VerticalAlignment="Top" Width="62" RenderTransformOrigin="0.016,0.522"/>
+                <TextBox x:Name="TextBoxJPEGCompression" MaxLength="3" PreviewTextInput="PreviewTextInput" HorizontalAlignment="Left" Height="23" Margin="159,70,0,0" TextWrapping="Wrap" Text="100" VerticalAlignment="Top" Width="62" RenderTransformOrigin="0.016,0.522"/>
             </Grid>
         </GroupBox>
         <GroupBox Background="Wheat" x:Name="GroupBoxConvertFileSize" Header="Convert File Size" HorizontalAlignment="Left" Margin="278,222,0,0" VerticalAlignment="Top" Height="137" Width="256">
@@ -45,16 +45,16 @@
                 <ComboBox x:Name="ComboBoxKeepAspectRatio" HorizontalAlignment="Left" Margin="116,23,0,0" VerticalAlignment="Top" Width="120" SelectionChanged="ComboBoxKeepAspectRatio_SelectionChanged"/>
                 <Label x:Name="LabelWidth" Content="Width" HorizontalAlignment="Left" Margin="0,51,0,0" VerticalAlignment="Top"/>
                 <Label x:Name="LabelHeight" Content="Height" HorizontalAlignment="Left" Margin="0,82,0,0" VerticalAlignment="Top"/>
-                <TextBox x:Name="TextBoxWidth" PreviewTextInput="PreviewTextInput" HorizontalAlignment="Left" Height="23" Margin="116,51,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="62"/>
-                <TextBox x:Name="TextBoxHeight" PreviewTextInput="PreviewTextInput" HorizontalAlignment="Left" Height="23" Margin="116,82,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="62"/>
+                <TextBox x:Name="TextBoxWidth" MaxLength="7" PreviewTextInput="PreviewTextInput" HorizontalAlignment="Left" Height="23" Margin="116,51,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="62"/>
+                <TextBox x:Name="TextBoxHeight" MaxLength="7" PreviewTextInput="PreviewTextInput" HorizontalAlignment="Left" Height="23" Margin="116,82,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="62"/>
                 <CheckBox x:Name="CheckBoxEnlargeSmallerImages" Content="Enlarge smaller images" HorizontalAlignment="Left" Margin="10,108,0,0" VerticalAlignment="Top"/>
             </Grid>
         </GroupBox>
         <Label Content="Output file name" HorizontalAlignment="Left" Margin="10,372,0,0" VerticalAlignment="Top"/>
-        <TextBox x:Name="TextBoxOutputFileName" PreviewTextInput="FileNamePreview" HorizontalAlignment="Left" Height="23" Margin="114,374,0,0" TextWrapping="Wrap" Text="Image" VerticalAlignment="Top" Width="137"/>
+        <TextBox x:Name="TextBoxOutputFileName" MaxLength="250" PreviewTextInput="FileNamePreview" HorizontalAlignment="Left" Height="23" Margin="114,374,0,0" TextWrapping="Wrap" Text="Image" VerticalAlignment="Top" Width="137"/>
         <CheckBox x:Name="CheckBoxOverwriteExistingFiles" Content="Overwrite existing files" HorizontalAlignment="Left" Margin="278,390,0,0" VerticalAlignment="Top"/>
         <ProgressBar x:Name="ProgressBarProgress" HorizontalAlignment="Left" Height="22" Margin="10,440,0,0" VerticalAlignment="Top" Width="392"/>
-        <Label Content="Processed file" HorizontalAlignment="Left" Margin="10,409,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="LabelProcessedFile" Content="Processed file" HorizontalAlignment="Left" Margin="10,409,0,0" VerticalAlignment="Top"/>
         <TextBox x:Name="TextBoxProcessedFile" HorizontalAlignment="Left" Height="23" Margin="114,411,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="288"/>
     </Grid>
 </Window>

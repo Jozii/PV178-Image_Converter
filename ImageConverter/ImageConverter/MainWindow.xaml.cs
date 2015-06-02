@@ -70,6 +70,7 @@ namespace ImageConverter
         {
             if (!ControlProperties())
                 return;
+            ButtonConvert.IsEnabled = false;
             if (FormatConversionRadioBox.IsChecked != null && (bool) FormatConversionRadioBox.IsChecked)
             {
                 ConvertFormat();
@@ -85,6 +86,19 @@ namespace ImageConverter
             if (FormatConversionRadioBox.IsChecked != true && SizeConversionRadioBox.IsChecked != true)
             {
                 MessageBox.Show("Select either format or size conversion", "Select what to do", MessageBoxButton.OK, MessageBoxImage.Information);
+                return false;
+            }
+            if (_files.Count() == 0)
+            {
+                MessageBox.Show("Select any files to convert", "No files are selected", MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return false;
+            }
+            if (_outputDirectory == null)
+            {
+                MessageBox.Show("Select directory for output files", "No output directory", MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return false;
             }
             if (FormatConversionRadioBox.IsChecked == true)
             {
@@ -96,7 +110,91 @@ namespace ImageConverter
                     return false;
                 }
             }
+            if (SizeConversionRadioBox.IsChecked == true)
+            {
+                KeepAspectRatio ratio =
+                    (KeepAspectRatio)
+                        Enum.Parse(typeof (KeepAspectRatio), ComboBoxKeepAspectRatio.SelectedItem.ToString());
+
+                int width;
+                int height;
+                switch(ratio)
+                {
+                    case KeepAspectRatio.NONE:
+                        if (TextBoxWidth.Text.Length < 1)
+                        {
+                            MessageBoxFillWidth();
+                            return false;
+                        }
+                        if (TextBoxHeight.Text.Length < 1)
+                        {
+                            MessageBoxFillHeight();
+                            return false;
+                        }
+                        width = Int32.Parse(TextBoxWidth.Text);
+                        height = Int32.Parse(TextBoxHeight.Text);
+                        if (width < 1)
+                        {
+                            ShowMessageBoxWidth();
+                            return false;
+                        }
+                        if (height < 1)
+                        {
+                            ShowMessageBoxHeight();
+                            return false;
+                        }
+                        break;
+                    case KeepAspectRatio.HEIGHT:
+                        if (TextBoxHeight.Text.Length < 1)
+                        {
+                            MessageBoxFillHeight();
+                            return false;
+                        }
+                        height = Int32.Parse(TextBoxHeight.Text);
+                        if (height < 1)
+                        {
+                            ShowMessageBoxHeight();
+                            return false;
+                        }
+                        break;
+                    case KeepAspectRatio.WIDTH:
+                        if (TextBoxWidth.Text.Length < 1)
+                        {
+                            MessageBoxFillWidth();
+                            return false;
+                        }
+                        width = Int32.Parse(TextBoxWidth.Text);
+                        if (width < 1)
+                        {
+                            ShowMessageBoxWidth(); 
+                            return false;
+                        }
+                        break;
+                }
+            }
             return true;
+        }
+
+        private void MessageBoxFillWidth()
+        {
+            MessageBox.Show("Fill width", "Fill width", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        private void MessageBoxFillHeight()
+        {
+            MessageBox.Show("Fill height", "Fill height", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        private void ShowMessageBoxHeight()
+        {
+            MessageBox.Show("Height must be at least 1", "Wrong height value", MessageBoxButton.OK,
+                                MessageBoxImage.Information);
+                            
+        }
+
+        private void ShowMessageBoxWidth()
+        {
+            MessageBox.Show("Width must be at least 1", "Wrong width value", MessageBoxButton.OK,
+                                MessageBoxImage.Information);
+                            
         }
 
 
@@ -186,6 +284,7 @@ namespace ImageConverter
             }
             TextBoxProcessedFile.Text = "";
             ProgressBarProgress.Value = 0;
+            ButtonConvert.IsEnabled = true;
         }
 
         private void BgWorkerProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -228,6 +327,7 @@ namespace ImageConverter
             InitComboBoxes();
             TextBoxNumberOfSelectedFiles.Text = "0";
             TextBoxNumberOfSelectedFiles.IsReadOnly = true;
+            TextBoxNumberOfSelectedFiles.IsEnabled = false;
             TextBoxProcessedFile.IsReadOnly = true;
             TextBoxOutputDirectory.IsReadOnly = true;
         }
