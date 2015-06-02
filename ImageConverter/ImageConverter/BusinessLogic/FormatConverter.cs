@@ -159,6 +159,8 @@ namespace ImageConverter.BusinessLogic
                     int report = (int) ((double)currentFile / max * 100.00);
                     bw.ReportProgress(report,file);
                 }
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
             }
             return list;
         }

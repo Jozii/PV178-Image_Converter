@@ -176,6 +176,7 @@ namespace ImageConverter
             {
                 MessageBox.Show("Output file name cannot be empty", "Wrong output file name", MessageBoxButton.OK,
                     MessageBoxImage.Information);
+                return false;
             }
             return true;
         }
@@ -201,8 +202,6 @@ namespace ImageConverter
                                 MessageBoxImage.Information);
                             
         }
-
-
         private void ConvertFormat()
         {
             string outputFileName = _outputDirectory + "\\" + TextBoxOutputFileName.Text;
