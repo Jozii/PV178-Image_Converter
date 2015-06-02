@@ -15,20 +15,7 @@ namespace ImageConverter.BusinessLogic
     {
         public void EncodeIntoJPEG(string inputFile, string outputFile, BitmapSource source, int compression)
         {
-            if (compression == 100)
-            {
-                JpegBitmapEncoder encoder = new JpegBitmapEncoder();
-                encoder.Frames.Add(BitmapFrame.Create(source));
-                using (FileStream fs = new FileStream(outputFile, FileMode.Create))
-                {
-                    encoder.Save(fs);
-                    GC.WaitForPendingFinalizers();
-                    GC.Collect();
-                }
-            }else
-            {
-                VaryQualityLevel(inputFile, outputFile, compression);
-            }
+            VaryQualityLevel(inputFile, outputFile, compression);
         }
 
         public void EncodeIntoPNG(string outputFile, BitmapSource source)

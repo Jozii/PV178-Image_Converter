@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="ImageConverter" Height="510" Width="560" MinHeight="510" MinWidth="560"
-        Icon="../Pictures/Color-Pencils.jpg" Background="WhiteSmoke">
+        Icon="../Pictures/Color-Pencils.jpg" Background="WhiteSmoke" MaxHeight="510" MaxWidth="559" ResizeMode="CanMinimize">
     <Grid x:Name="SelectedFilesTextBox">
         <GroupBox Background="Wheat" Header="Type of operation" HorizontalAlignment="Left" Margin="10,19,0,0" VerticalAlignment="Top" Height="70" Width="524">
             <Grid x:Name="GroupTypeOfOperation" HorizontalAlignment="Left" Height="67" Margin="0,-10,-36.2,-9" VerticalAlignment="Top" Width="521">
@@ -52,7 +52,7 @@
         </GroupBox>
         <Label Content="Output file name" HorizontalAlignment="Left" Margin="10,372,0,0" VerticalAlignment="Top"/>
         <TextBox x:Name="TextBoxOutputFileName" MaxLength="250" PreviewTextInput="FileNamePreview" HorizontalAlignment="Left" Height="23" Margin="114,374,0,0" TextWrapping="Wrap" Text="Image" VerticalAlignment="Top" Width="137"/>
-        <CheckBox x:Name="CheckBoxOverwriteExistingFiles" Content="Overwrite existing files" HorizontalAlignment="Left" Margin="278,377,0,0" VerticalAlignment="Top"/>
+        <CheckBox x:Name="CheckBoxOverwriteExistingFiles" Content="Can overwrite existing files" HorizontalAlignment="Left" Margin="278,377,0,0" VerticalAlignment="Top"/>
         <ProgressBar x:Name="ProgressBarProgress" HorizontalAlignment="Left" Height="22" Margin="10,440,0,0" VerticalAlignment="Top" Width="392"/>
         <Label x:Name="LabelProcessedFile" Content="Processed file:" HorizontalAlignment="Left" Margin="10,409,0,0" VerticalAlignment="Top"/>
         <Label x:Name="LabelProcessedFiles" Content="No file" HorizontalAlignment="Left" Margin="114,409,0,0" VerticalAlignment="Top"/>

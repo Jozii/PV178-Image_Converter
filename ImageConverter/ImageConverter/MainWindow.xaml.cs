@@ -178,6 +178,13 @@ namespace ImageConverter
                     MessageBoxImage.Information);
                 return false;
             }
+            if (Path.GetDirectoryName(_files.FirstOrDefault()) == _outputDirectory &&
+                CheckBoxOverwriteExistingFiles.IsChecked == true)
+            {
+                MessageBox.Show("Select another output directory", "Output directory", MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return false;
+            }
             return true;
         }
 
