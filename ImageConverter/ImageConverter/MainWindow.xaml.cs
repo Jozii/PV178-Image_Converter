@@ -50,7 +50,7 @@ namespace ImageConverter
 
         private void SetNumberOfFiles()
         {
-            TextBoxNumberOfSelectedFiles.Text = _files.Count.ToString();
+            LabelNumOfSelectedFiles.Content = _files.Count.ToString();
         }
 
         private void OutputDirectoryButton_Click(object sender, RoutedEventArgs e)
@@ -61,7 +61,7 @@ namespace ImageConverter
                 if (fb.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
                     _outputDirectory = fb.SelectedPath;
-                    TextBoxOutputDirectory.Text = fb.SelectedPath;
+                    LabelYourDirectory.Content = fb.SelectedPath;
                 }
             }
         }
@@ -282,14 +282,14 @@ namespace ImageConverter
                 }
                 MessageBox.Show("These files were not converted\n" + sb.ToString(),"Error in converting files",MessageBoxButton.OK,MessageBoxImage.Error);
             }
-            TextBoxProcessedFile.Text = "";
+            LabelProcessedFiles.Content = "No file";
             ProgressBarProgress.Value = 0;
             ButtonConvert.IsEnabled = true;
         }
 
         private void BgWorkerProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            TextBoxProcessedFile.Text = e.UserState as string;
+            LabelProcessedFiles.Content = e.UserState as string;
             ProgressBarProgress.Value = Math.Min(100, e.ProgressPercentage);
         }
 
@@ -325,11 +325,6 @@ namespace ImageConverter
         private void InitScreen()
         {
             InitComboBoxes();
-            TextBoxNumberOfSelectedFiles.Text = "0";
-            TextBoxNumberOfSelectedFiles.IsReadOnly = true;
-            TextBoxNumberOfSelectedFiles.IsEnabled = false;
-            TextBoxProcessedFile.IsReadOnly = true;
-            TextBoxOutputDirectory.IsReadOnly = true;
         }
 
         private void InitComboBoxes()
