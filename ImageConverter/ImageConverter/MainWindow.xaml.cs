@@ -172,6 +172,11 @@ namespace ImageConverter
                         break;
                 }
             }
+            if (TextBoxOutputFileName.Text.Length < 1)
+            {
+                MessageBox.Show("Output file name cannot be empty", "Wrong output file name", MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
             return true;
         }
 
@@ -283,6 +288,7 @@ namespace ImageConverter
                 MessageBox.Show("These files were not converted\n" + sb.ToString(),"Error in converting files",MessageBoxButton.OK,MessageBoxImage.Error);
             }
             LabelProcessedFiles.Content = "No file";
+            LabelPercents.Content = "0";
             ProgressBarProgress.Value = 0;
             ButtonConvert.IsEnabled = true;
         }
@@ -290,7 +296,9 @@ namespace ImageConverter
         private void BgWorkerProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             LabelProcessedFiles.Content = e.UserState as string;
-            ProgressBarProgress.Value = Math.Min(100, e.ProgressPercentage);
+            int progress = Math.Min(100, e.ProgressPercentage);
+            LabelPercents.Content = progress;
+            ProgressBarProgress.Value = progress;
         }
 
         private void BgConvertType(object sender, DoWorkEventArgs e)
@@ -417,8 +425,10 @@ namespace ImageConverter
 
         private void FileNamePreview(object sender, TextCompositionEventArgs e)
         {
-            e.Handled = !IsTextAllowedInFileName(e.Text);
-            MessageBox.Show("This character is there not allowed (" + e.Text + ")","Cannot enter this character",MessageBoxButton.OK,MessageBoxImage.Information);
+            bool result = IsTextAllowedInFileName(e.Text);
+            e.Handled = !result;
+            if (!result)
+                MessageBox.Show("This character is there not allowed (" + e.Text + ")","Cannot enter this character",MessageBoxButton.OK,MessageBoxImage.Information);
         }
 
         private bool IsTextAllowedInFileName(string text)
