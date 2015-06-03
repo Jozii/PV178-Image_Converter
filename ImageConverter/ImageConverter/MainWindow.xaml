@@ -35,7 +35,7 @@
 
                 <ComboBox x:Name="OutputFormatComboBox" HorizontalAlignment="Left" Margin="101,23,0,0" VerticalAlignment="Top" Width="120" Grid.ColumnSpan="2" SelectionChanged="OutputFormatComboBox_SelectionChanged"/>
                 <Label Content="Output format" HorizontalAlignment="Left" Margin="0,23,0,0" VerticalAlignment="Top"/>
-                <Label x:Name="LabelJPEGCompression" Content="JPEG compression" HorizontalAlignment="Left" Margin="0,67,0,0" VerticalAlignment="Top"/>
+                <Label x:Name="LabelJPEGCompression" Content="JPEG quality (in %)" HorizontalAlignment="Left" Margin="0,67,0,0" VerticalAlignment="Top"/>
                 <TextBox x:Name="TextBoxJPEGCompression" MaxLength="3" PreviewTextInput="PreviewTextInput" HorizontalAlignment="Left" Height="23" Margin="159,70,0,0" TextWrapping="Wrap" Text="100" VerticalAlignment="Top" Width="62" RenderTransformOrigin="0.016,0.522"/>
             </Grid>
         </GroupBox>

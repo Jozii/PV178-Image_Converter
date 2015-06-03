@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using ImageConverter.BusinessLogic;
 using ImageConverter.BusinessLogic.Enumerations;
+using ImageConverter.Helpers;
 using MessageBox = System.Windows.MessageBox;
 using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
 using SizeConverter = ImageConverter.BusinessLogic.SizeConverter;
@@ -130,6 +131,17 @@ namespace ImageConverter
                     break;
             }
         }
+        private void FileNamePreview(object sender, TextCompositionEventArgs e)
+        {
+            bool result = FileHelper.IsTextAllowedInFileName(e.Text);
+            e.Handled = !result;
+            if (!result)
+                MessageBox.Show("This character is there not allowed (" + e.Text + ")", "Cannot enter this character", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        private void PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = !FileHelper.IsTextAllowed(e.Text);
+        }
 
         #region BackgroundWorker methods
 
@@ -137,7 +149,7 @@ namespace ImageConverter
         {
             string outputFileName = _outputDirectory + "\\" + TextBoxOutputFileName.Text;
             Format format = (Format)Enum.Parse(typeof(Format), OutputFormatComboBox.SelectedItem.ToString());
-            _xmlLog.Info("Convert format " + GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " to " + format.ToString());
+            _xmlLog.Info("Convert format " + FileHelper.GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " to " + format.ToString());
             switch (format)
             {
                 case Format.JPEG:
@@ -178,15 +190,15 @@ namespace ImageConverter
                 case KeepAspectRatio.NONE:
                     width = Int32.Parse(TextBoxWidth.Text);
                     height = Int32.Parse(TextBoxHeight.Text);
-                    _xmlLog.Info("Convert size " + GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " to width: " + width + " and height " + height);
+                    _xmlLog.Info("Convert size " + FileHelper.GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " to width: " + width + " and height " + height);
                     break;
                 case KeepAspectRatio.WIDTH:
                     width = Int32.Parse(TextBoxWidth.Text);
-                    _xmlLog.Info("Convert size " + GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " to width: " + width);
+                    _xmlLog.Info("Convert size " + FileHelper.GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " to width: " + width);
                     break;
                 case KeepAspectRatio.HEIGHT:
                     height = Int32.Parse(TextBoxHeight.Text);
-                    _xmlLog.Info("Convert size " + GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " height " + height);
+                    _xmlLog.Info("Convert size " + FileHelper.GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " height " + height);
                     break;
             }
             string outputFileName = _outputDirectory + "\\" + TextBoxOutputFileName.Text;
@@ -219,7 +231,7 @@ namespace ImageConverter
                     sb.Append(s + '\n');
                 }
                 MessageBox.Show("These files were not converted\n" + sb.ToString(),"Error in converting files",MessageBoxButton.OK,MessageBoxImage.Error);
-                _xmlLog.Debug("Not converted files: " + GetFilesToString(result));
+                _xmlLog.Debug("Not converted files: " + FileHelper.GetFilesToString(result));
             }
             LabelProcessedFiles.Content = "No file";
             LabelPercents.Content = "0";
@@ -402,60 +414,24 @@ namespace ImageConverter
         {
             if (width)
             {
-                LabelWidth.Visibility = Visibility.Visible;
-                TextBoxWidth.Visibility = Visibility.Visible;
+                LabelWidth.IsEnabled = true;
+                TextBoxWidth.IsEnabled = true;
             }
             else
             {
-                LabelWidth.Visibility = Visibility.Hidden;
-                TextBoxWidth.Visibility = Visibility.Hidden;
+                LabelWidth.IsEnabled = false;
+                TextBoxWidth.IsEnabled = false;
             }
             if (height)
             {
-                LabelHeight.Visibility = Visibility.Visible;
-                TextBoxHeight.Visibility = Visibility.Visible;
+                LabelHeight.IsEnabled = true;
+                TextBoxHeight.IsEnabled = true;
             }
             else
             {
-                LabelHeight.Visibility = Visibility.Hidden;
-                TextBoxHeight.Visibility = Visibility.Hidden;
+                LabelHeight.IsEnabled = false;
+                TextBoxHeight.IsEnabled = false;
             }
-        }
-
-        private void PreviewTextInput(object sender, TextCompositionEventArgs e)
-        {
-            e.Handled = !IsTextAllowed(e.Text);
-        }
-
-        private bool IsTextAllowed(string text)
-        {
-            Regex regex = new Regex("[^0-9]+");
-            return !regex.IsMatch(text);
-        }
-
-        private void FileNamePreview(object sender, TextCompositionEventArgs e)
-        {
-            bool result = IsTextAllowedInFileName(e.Text);
-            e.Handled = !result;
-            if (!result)
-                MessageBox.Show("This character is there not allowed (" + e.Text + ")","Cannot enter this character",MessageBoxButton.OK,MessageBoxImage.Information);
-        }
-
-        private bool IsTextAllowedInFileName(string text)
-        {
-            IEnumerable<char> list = Path.GetInvalidFileNameChars();
-            bool result = !(list.Contains(text[0]));
-            return result;
-        }
-
-        private static string GetFilesToString(IEnumerable<string> list)
-        {
-            StringBuilder sb = new StringBuilder();
-            foreach (string s in list)
-            {
-                sb.Append(Path.GetFileName(s) + " ");
-            }
-            return sb.ToString();
         }
         #endregion
     }
