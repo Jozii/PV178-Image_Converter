@@ -87,7 +87,7 @@ namespace ImageConverter.BusinessLogic
                 {
                     case ".jpeg":
                     case ".jpg":
-                        _encoder.EncodeIntoJPEG(file, outputFileName, result, 100);
+                        _encoder.EncodeIntoJPEG(outputFileName, result, 100);
                         break;
                     case ".png":
                         _encoder.EncodeIntoPNG(outputFileName, result);

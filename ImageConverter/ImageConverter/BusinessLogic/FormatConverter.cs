@@ -1,13 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using ImageConverter.BusinessLogic.Enumerations;
 
@@ -63,7 +58,7 @@ namespace ImageConverter.BusinessLogic
                 switch (outputFormat)
                 {
                     case Format.JPEG:
-                        _encoder.EncodeIntoJPEG(file,outputFileName, source, compression);
+                        _encoder.EncodeIntoJPEG(outputFileName, source, compression);
                         break;
                     case Format.GIF:
                         _encoder.EncodeIntoGIF(outputFileName, source);

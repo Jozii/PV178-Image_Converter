@@ -34,6 +34,23 @@ namespace ImageConverter
             _formatConverter = new FormatConverter(new BitmapSourceLoader(), _xmlLog, new FormatEncoder());
             _sizeConverter = new SizeConverter(new BitmapSourceLoader(), _xmlLog, new FormatEncoder());
         }
+        private void InitScreen()
+        {
+            InitComboBoxes();
+        }
+
+        private void InitComboBoxes()
+        {
+            OutputFormatComboBox.ItemsSource = Enum.GetValues(typeof(Format));
+            OutputFormatComboBox.SelectedIndex = 0;
+            TextBoxJPEGCompression.Visibility = Visibility.Visible;
+            LabelJPEGCompression.Visibility = Visibility.Visible;
+            ComboBoxKeepAspectRatio.ItemsSource = Enum.GetValues(typeof(KeepAspectRatio));
+            ComboBoxKeepAspectRatio.SelectedIndex = 0;
+        }
+
+        #region Event Handlers
+
         private void ButtonSelectFiles_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog dialog = new OpenFileDialog();
@@ -47,12 +64,6 @@ namespace ImageConverter
                 SetNumberOfFiles();
             }
         }
-
-        private void SetNumberOfFiles()
-        {
-            LabelNumOfSelectedFiles.Content = _files.Count.ToString();
-        }
-
         private void OutputDirectoryButton_Click(object sender, RoutedEventArgs e)
         {
             using (FolderBrowserDialog fb = new FolderBrowserDialog())
@@ -65,7 +76,6 @@ namespace ImageConverter
                 }
             }
         }
-
         private void ConvertButton_Click(object sender, RoutedEventArgs e)
         {
             if (!ControlProperties())
@@ -80,135 +90,49 @@ namespace ImageConverter
                 ConvertSize();
             }
         }
-
-        private bool ControlProperties()
+        private void ButtonSelectDirectory_Click(object sender, RoutedEventArgs e)
         {
-            if (FormatConversionRadioBox.IsChecked != true && SizeConversionRadioBox.IsChecked != true)
+            using (FolderBrowserDialog fb = new FolderBrowserDialog())
             {
-                MessageBox.Show("Select either format or size conversion", "Select what to do", MessageBoxButton.OK, MessageBoxImage.Information);
-                return false;
-            }
-            if (_files.Count() == 0)
-            {
-                MessageBox.Show("Select any files to convert", "No files are selected", MessageBoxButton.OK,
-                    MessageBoxImage.Information);
-                return false;
-            }
-            if (_outputDirectory == null)
-            {
-                MessageBox.Show("Select directory for output files", "No output directory", MessageBoxButton.OK,
-                    MessageBoxImage.Information);
-                return false;
-            }
-            if (FormatConversionRadioBox.IsChecked == true)
-            {
-                Format format = (Format) Enum.Parse(typeof (Format), OutputFormatComboBox.SelectedItem.ToString());
-                if (format == Format.JPEG && Int32.Parse(TextBoxJPEGCompression.Text) > 100)
+                fb.ShowNewFolderButton = false;
+                if (fb.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
-                    MessageBox.Show("Compression has to be mostly 100%", "Wrong compression", MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                    return false;
+                    _files = Directory.GetFiles(fb.SelectedPath).ToList();
+                    SetNumberOfFiles();
                 }
             }
-            if (SizeConversionRadioBox.IsChecked == true)
+        }
+        private void OutputFormatComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (OutputFormatComboBox.SelectedIndex == 0)
             {
-                KeepAspectRatio ratio =
-                    (KeepAspectRatio)
-                        Enum.Parse(typeof (KeepAspectRatio), ComboBoxKeepAspectRatio.SelectedItem.ToString());
-
-                int width;
-                int height;
-                switch(ratio)
-                {
-                    case KeepAspectRatio.NONE:
-                        if (TextBoxWidth.Text.Length < 1)
-                        {
-                            MessageBoxFillWidth();
-                            return false;
-                        }
-                        if (TextBoxHeight.Text.Length < 1)
-                        {
-                            MessageBoxFillHeight();
-                            return false;
-                        }
-                        width = Int32.Parse(TextBoxWidth.Text);
-                        height = Int32.Parse(TextBoxHeight.Text);
-                        if (width < 1)
-                        {
-                            ShowMessageBoxWidth();
-                            return false;
-                        }
-                        if (height < 1)
-                        {
-                            ShowMessageBoxHeight();
-                            return false;
-                        }
-                        break;
-                    case KeepAspectRatio.HEIGHT:
-                        if (TextBoxHeight.Text.Length < 1)
-                        {
-                            MessageBoxFillHeight();
-                            return false;
-                        }
-                        height = Int32.Parse(TextBoxHeight.Text);
-                        if (height < 1)
-                        {
-                            ShowMessageBoxHeight();
-                            return false;
-                        }
-                        break;
-                    case KeepAspectRatio.WIDTH:
-                        if (TextBoxWidth.Text.Length < 1)
-                        {
-                            MessageBoxFillWidth();
-                            return false;
-                        }
-                        width = Int32.Parse(TextBoxWidth.Text);
-                        if (width < 1)
-                        {
-                            ShowMessageBoxWidth(); 
-                            return false;
-                        }
-                        break;
-                }
+                TextBoxJPEGCompression.Visibility = Visibility.Visible;
+                LabelJPEGCompression.Visibility = Visibility.Visible;
             }
-            if (TextBoxOutputFileName.Text.Length < 1)
+            else
             {
-                MessageBox.Show("Output file name cannot be empty", "Wrong output file name", MessageBoxButton.OK,
-                    MessageBoxImage.Information);
-                return false;
+                TextBoxJPEGCompression.Visibility = Visibility.Hidden;
+                LabelJPEGCompression.Visibility = Visibility.Hidden;
             }
-            if (Path.GetDirectoryName(_files.FirstOrDefault()) == _outputDirectory &&
-                CheckBoxOverwriteExistingFiles.IsChecked == true)
+        }
+        private void ComboBoxKeepAspectRatio_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            switch (ComboBoxKeepAspectRatio.SelectedIndex)
             {
-                MessageBox.Show("Select another output directory", "Output directory", MessageBoxButton.OK,
-                    MessageBoxImage.Information);
-                return false;
+                case 0:
+                    WidthAndHeightSetVisibility(true, true);
+                    break;
+                case 1:
+                    WidthAndHeightSetVisibility(true, false);
+                    break;
+                case 2:
+                    WidthAndHeightSetVisibility(false, true);
+                    break;
             }
-            return true;
         }
 
-        private void MessageBoxFillWidth()
-        {
-            MessageBox.Show("Fill width", "Fill width", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-        private void MessageBoxFillHeight()
-        {
-            MessageBox.Show("Fill height", "Fill height", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-        private void ShowMessageBoxHeight()
-        {
-            MessageBox.Show("Height must be at least 1", "Wrong height value", MessageBoxButton.OK,
-                                MessageBoxImage.Information);
-                            
-        }
+        #region BackgroundWorker methods
 
-        private void ShowMessageBoxWidth()
-        {
-            MessageBox.Show("Width must be at least 1", "Wrong width value", MessageBoxButton.OK,
-                                MessageBoxImage.Information);
-                            
-        }
         private void ConvertFormat()
         {
             string outputFileName = _outputDirectory + "\\" + TextBoxOutputFileName.Text;
@@ -340,62 +264,138 @@ namespace ImageConverter
             e.Result = result;
         }
 
-        private void InitScreen()
-        {
-            InitComboBoxes();
-        }
+        #endregion
+        
+        #endregion
 
-        private void InitComboBoxes()
+        #region Other methods
+        private bool ControlProperties()
         {
-            OutputFormatComboBox.ItemsSource = Enum.GetValues(typeof (Format));
-            OutputFormatComboBox.SelectedIndex = 0;
-            TextBoxJPEGCompression.Visibility = Visibility.Visible;
-            LabelJPEGCompression.Visibility = Visibility.Visible;
-            ComboBoxKeepAspectRatio.ItemsSource = Enum.GetValues(typeof (KeepAspectRatio));
-            ComboBoxKeepAspectRatio.SelectedIndex = 0;
-        }
-
-        private void ButtonSelectDirectory_Click(object sender, RoutedEventArgs e)
-        {
-            using (FolderBrowserDialog fb = new FolderBrowserDialog())
+            if (FormatConversionRadioBox.IsChecked != true && SizeConversionRadioBox.IsChecked != true)
             {
-                fb.ShowNewFolderButton = false;
-                if (fb.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                MessageBox.Show("Select either format or size conversion", "Select what to do", MessageBoxButton.OK, MessageBoxImage.Information);
+                return false;
+            }
+            if (_files.Count() == 0)
+            {
+                MessageBox.Show("Select any files to convert", "No files are selected", MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return false;
+            }
+            if (_outputDirectory == null)
+            {
+                MessageBox.Show("Select directory for output files", "No output directory", MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return false;
+            }
+            if (FormatConversionRadioBox.IsChecked == true)
+            {
+                Format format = (Format)Enum.Parse(typeof(Format), OutputFormatComboBox.SelectedItem.ToString());
+                if (format == Format.JPEG && Int32.Parse(TextBoxJPEGCompression.Text) > 100)
                 {
-                    _files = Directory.GetFiles(fb.SelectedPath).ToList();
-                    SetNumberOfFiles();
+                    MessageBox.Show("Compression has to be mostly 100%", "Wrong compression", MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                    return false;
                 }
             }
-        }
+            if (SizeConversionRadioBox.IsChecked == true)
+            {
+                KeepAspectRatio ratio =
+                    (KeepAspectRatio)
+                        Enum.Parse(typeof(KeepAspectRatio), ComboBoxKeepAspectRatio.SelectedItem.ToString());
 
-        private void OutputFormatComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (OutputFormatComboBox.SelectedIndex == 0)
-            {
-                TextBoxJPEGCompression.Visibility = Visibility.Visible;
-                LabelJPEGCompression.Visibility = Visibility.Visible;
+                int width;
+                int height;
+                switch (ratio)
+                {
+                    case KeepAspectRatio.NONE:
+                        if (TextBoxWidth.Text.Length < 1)
+                        {
+                            MessageBoxFillWidth();
+                            return false;
+                        }
+                        if (TextBoxHeight.Text.Length < 1)
+                        {
+                            MessageBoxFillHeight();
+                            return false;
+                        }
+                        width = Int32.Parse(TextBoxWidth.Text);
+                        height = Int32.Parse(TextBoxHeight.Text);
+                        if (width < 1)
+                        {
+                            ShowMessageBoxWidth();
+                            return false;
+                        }
+                        if (height < 1)
+                        {
+                            ShowMessageBoxHeight();
+                            return false;
+                        }
+                        break;
+                    case KeepAspectRatio.HEIGHT:
+                        if (TextBoxHeight.Text.Length < 1)
+                        {
+                            MessageBoxFillHeight();
+                            return false;
+                        }
+                        height = Int32.Parse(TextBoxHeight.Text);
+                        if (height < 1)
+                        {
+                            ShowMessageBoxHeight();
+                            return false;
+                        }
+                        break;
+                    case KeepAspectRatio.WIDTH:
+                        if (TextBoxWidth.Text.Length < 1)
+                        {
+                            MessageBoxFillWidth();
+                            return false;
+                        }
+                        width = Int32.Parse(TextBoxWidth.Text);
+                        if (width < 1)
+                        {
+                            ShowMessageBoxWidth();
+                            return false;
+                        }
+                        break;
+                }
             }
-            else
+            if (TextBoxOutputFileName.Text.Length < 1)
             {
-                TextBoxJPEGCompression.Visibility = Visibility.Hidden;
-                LabelJPEGCompression.Visibility = Visibility.Hidden;
+                MessageBox.Show("Output file name cannot be empty", "Wrong output file name", MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return false;
             }
+            if (Path.GetDirectoryName(_files.FirstOrDefault()) == _outputDirectory &&
+                CheckBoxOverwriteExistingFiles.IsChecked == true)
+            {
+                MessageBox.Show("Select another output directory", "Output directory", MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return false;
+            }
+            return true;
         }
-
-        private void ComboBoxKeepAspectRatio_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void MessageBoxFillWidth()
         {
-            switch (ComboBoxKeepAspectRatio.SelectedIndex)
-            {
-                case 0:
-                    WidthAndHeightSetVisibility(true,true);
-                    break;
-                case 1:
-                    WidthAndHeightSetVisibility(true,false);
-                    break;
-                case 2:
-                    WidthAndHeightSetVisibility(false,true);
-                    break;
-            }
+            MessageBox.Show("Fill width", "Fill width", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        private void MessageBoxFillHeight()
+        {
+            MessageBox.Show("Fill height", "Fill height", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        private void ShowMessageBoxHeight()
+        {
+            MessageBox.Show("Height must be at least 1", "Wrong height value", MessageBoxButton.OK,
+                                MessageBoxImage.Information);
+        }
+        private void ShowMessageBoxWidth()
+        {
+            MessageBox.Show("Width must be at least 1", "Wrong width value", MessageBoxButton.OK,
+                                MessageBoxImage.Information);
+        }
+        private void SetNumberOfFiles()
+        {
+            LabelNumOfSelectedFiles.Content = _files.Count.ToString();
         }
 
         private void WidthAndHeightSetVisibility(bool width, bool height)
@@ -457,6 +457,6 @@ namespace ImageConverter
             }
             return sb.ToString();
         }
+        #endregion
     }
-    
 }

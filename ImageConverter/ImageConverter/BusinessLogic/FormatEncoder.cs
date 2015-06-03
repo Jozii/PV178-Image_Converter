@@ -7,15 +7,17 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Media.Imaging;
+using Point = System.Drawing.Point;
 
 namespace ImageConverter.BusinessLogic
 {
     public class FormatEncoder : IFormatEncoder
     {
-        public void EncodeIntoJPEG(string inputFile, string outputFile, BitmapSource source, int compression)
+        public void EncodeIntoJPEG(string outputFile, BitmapSource source, int compression)
         {
-            VaryQualityLevel(inputFile, outputFile, compression);
+            VaryQualityLevel(outputFile, source, compression);
         }
 
         public void EncodeIntoPNG(string outputFile, BitmapSource source)
@@ -28,7 +30,6 @@ namespace ImageConverter.BusinessLogic
                 GC.WaitForPendingFinalizers();
                 GC.Collect();
             }
-            GC.WaitForPendingFinalizers();
         }
 
         public void EncodeIntoTiff(string outputFile, BitmapSource source)
@@ -66,9 +67,9 @@ namespace ImageConverter.BusinessLogic
                 GC.Collect();
             }
         }
-        private static void VaryQualityLevel(string inputFile, string outputFile, int compression)
+        private static void VaryQualityLevel(string outputFile, BitmapSource source, int compression)
         {
-            Bitmap bmp = new Bitmap(inputFile);
+            Bitmap bmp = GetBitmap(source);
             ImageCodecInfo jpgEncoder = GetEncoder(ImageFormat.Jpeg);
             System.Drawing.Imaging.Encoder myEncoder =
                 System.Drawing.Imaging.Encoder.Quality;
@@ -91,6 +92,24 @@ namespace ImageConverter.BusinessLogic
                 }
             }
             return null;
+        }
+        private static Bitmap GetBitmap(BitmapSource source)
+        {
+            Bitmap bmp = new Bitmap(
+              source.PixelWidth,
+              source.PixelHeight,
+              PixelFormat.Format32bppPArgb);
+            BitmapData data = bmp.LockBits(
+              new Rectangle(Point.Empty, bmp.Size),
+              ImageLockMode.WriteOnly,
+              PixelFormat.Format32bppPArgb);
+            source.CopyPixels(
+              Int32Rect.Empty,
+              data.Scan0,
+              data.Height * data.Stride,
+              data.Stride);
+            bmp.UnlockBits(data);
+            return bmp;
         }
     }
 }
