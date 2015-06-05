@@ -6,7 +6,7 @@ namespace ImageConverter.BusinessLogic
 {
     public interface IFormatConverter
     {
-        IEnumerable<string> Convert(IEnumerable<string> files, Format outputFormat, string outputFileName,
-            int compression = 100, bool overwriteOutput = false, BackgroundWorker bw = null);
+        bool ConvertFormat(string file, Format outputFormat, string outputFileName, int compression = 100,
+            bool overwriteOutput = false);
     }
 }

@@ -26,14 +26,14 @@ namespace ImageConverter
         private List<string> _files = new List<string>();
         private string _outputDirectory;
         private readonly IXMLLog _xmlLog = new XMLLog("logging.log");
-        private readonly IFormatConverter _formatConverter;
-        private readonly ISizeConverter _sizeConverter;
+        private readonly IConverter _converter;
         public MainWindow()
         {
             InitializeComponent();
             InitScreen();
-            _formatConverter = new FormatConverter(new BitmapSourceLoader(), _xmlLog, new FormatEncoder());
-            _sizeConverter = new SizeConverter(new BitmapSourceLoader(), _xmlLog, new FormatEncoder());
+            _converter = new Converter(new FormatConverter(new BitmapSourceLoader(), _xmlLog,new FormatEncoder()),
+                new SizeConverter(new BitmapSourceLoader(), _xmlLog,new FormatEncoder()),
+                _xmlLog);
         }
         private void InitScreen()
         {
@@ -89,6 +89,10 @@ namespace ImageConverter
             else if (SizeConversionRadioBox.IsChecked != null && (bool) SizeConversionRadioBox.IsChecked)
             {
                 ConvertSize();
+            }
+            else if (FormatAndSizeConversionRadioBox.IsChecked == true)
+            {
+                ConvertFormatAndSize();
             }
         }
         private void ButtonSelectDirectory_Click(object sender, RoutedEventArgs e)
@@ -198,7 +202,7 @@ namespace ImageConverter
                     break;
                 case KeepAspectRatio.HEIGHT:
                     height = Int32.Parse(TextBoxHeight.Text);
-                    _xmlLog.Info("Convert size " + FileHelper.GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " height " + height);
+                    _xmlLog.Info("Convert size " + FileHelper.GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " to height " + height);
                     break;
             }
             string outputFileName = _outputDirectory + "\\" + TextBoxOutputFileName.Text;
@@ -214,7 +218,41 @@ namespace ImageConverter
                     overWriteOutput));
             }
         }
-
+        private void ConvertFormatAndSize()
+        {
+            int width = 0;
+            int height = 0;
+            int compression = Int32.Parse(TextBoxJPEGCompression.Text);
+            Format format = (Format)Enum.Parse(typeof(Format), OutputFormatComboBox.SelectedItem.ToString());
+            KeepAspectRatio ratio = (KeepAspectRatio)Enum.Parse(typeof(KeepAspectRatio), ComboBoxKeepAspectRatio.SelectedItem.ToString());
+            switch (ratio)
+            {
+                case KeepAspectRatio.NONE:
+                    width = Int32.Parse(TextBoxWidth.Text);
+                    height = Int32.Parse(TextBoxHeight.Text);
+                    _xmlLog.Info("Convert format and size " + FileHelper.GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " with format " + format + " to width: " + width + " and height " + height);
+                    break;
+                case KeepAspectRatio.WIDTH:
+                    width = Int32.Parse(TextBoxWidth.Text);
+                    _xmlLog.Info("Convert format and size " + FileHelper.GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " with format " + format + " to width: " + width);
+                    break;
+                case KeepAspectRatio.HEIGHT:
+                    height = Int32.Parse(TextBoxHeight.Text);
+                    _xmlLog.Info("Convert format and size " + FileHelper.GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " with format " + format + " to height " + height);
+                    break;
+            }
+            string outputFileName = _outputDirectory + "\\" + TextBoxOutputFileName.Text;
+            bool enlargeSmallerImages = CheckBoxEnlargeSmallerImages.IsChecked != null && (bool)CheckBoxEnlargeSmallerImages.IsChecked;
+            bool overWriteOutput = CheckBoxOverwriteExistingFiles.IsChecked != null && (bool)CheckBoxOverwriteExistingFiles.IsChecked;
+            using (BackgroundWorker worker = new BackgroundWorker())
+            {
+                worker.WorkerReportsProgress = true;
+                worker.DoWork += BgConvertFormatAndSize;
+                worker.ProgressChanged += BgWorkerProgressChanged;
+                worker.RunWorkerCompleted += BgWorkerCompleted;
+                worker.RunWorkerAsync(Tuple.Create(_files, format, width, height, outputFileName, ratio, Tuple.Create(enlargeSmallerImages, compression,overWriteOutput)));
+            }
+        }
         private void BgWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             var result = (List<string>) e.Result;
@@ -256,7 +294,7 @@ namespace ImageConverter
             var outputFileName = args.Item3;
             var compression = args.Item4;
             var overwriteOutput = args.Item5;
-            var result = _formatConverter.Convert(files, format, outputFileName, compression, overwriteOutput,bw);
+            var result = _converter.ConvertFormat(files, format, outputFileName, compression, overwriteOutput,bw);
             e.Result = result;
         }
 
@@ -271,8 +309,26 @@ namespace ImageConverter
             KeepAspectRatio ratio = args.Item5;
             bool enlargeSmallerImages = args.Item6;
             bool overwriteOutput = args.Item7;
-            var result = _sizeConverter.Resize(files, width, height, outputFileName, ratio, enlargeSmallerImages,
+            var result = _converter.Resize(files, width, height, outputFileName, ratio, enlargeSmallerImages,
                 overwriteOutput, bw);
+            e.Result = result;
+        }
+
+        private void BgConvertFormatAndSize(object sender, DoWorkEventArgs e)
+        {
+            var bw = sender as BackgroundWorker;
+            var args = (Tuple<List<string>, Format, int, int, string, KeepAspectRatio, Tuple<bool, int, bool>>)e.Argument;
+            var files = args.Item1;
+            Format format = args.Item2;
+            int width = args.Item3;
+            int height = args.Item4;
+            string outputFileName = args.Item5;
+            KeepAspectRatio ratio = args.Item6;
+            bool enlargeSmallerImages = args.Item7.Item1;
+            int compression = args.Item7.Item2;
+            bool overwriteOutput = args.Item7.Item3;
+            var result = _converter.ConvertFormatAndSize(files, format, width, height, outputFileName, ratio, enlargeSmallerImages,
+                compression, overwriteOutput, bw);
             e.Result = result;
         }
 
@@ -283,9 +339,9 @@ namespace ImageConverter
         #region Other methods
         private bool ControlProperties()
         {
-            if (FormatConversionRadioBox.IsChecked != true && SizeConversionRadioBox.IsChecked != true)
+            if (FormatConversionRadioBox.IsChecked != true && SizeConversionRadioBox.IsChecked != true && FormatAndSizeConversionRadioBox.IsChecked != true)
             {
-                MessageBox.Show("Select either format or size conversion", "Select what to do", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Select format, size or format and size conversion", "Select what to do", MessageBoxButton.OK, MessageBoxImage.Information);
                 return false;
             }
             if (_files.Count() == 0)
@@ -302,75 +358,20 @@ namespace ImageConverter
             }
             if (FormatConversionRadioBox.IsChecked == true)
             {
-                Format format = (Format)Enum.Parse(typeof(Format), OutputFormatComboBox.SelectedItem.ToString());
-                if (format == Format.JPEG && Int32.Parse(TextBoxJPEGCompression.Text) > 100)
-                {
-                    MessageBox.Show("Compression has to be mostly 100%", "Wrong compression", MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                if (!FormatConversionCheckProperties())
                     return false;
-                }
+                
             }
             if (SizeConversionRadioBox.IsChecked == true)
             {
-                KeepAspectRatio ratio =
-                    (KeepAspectRatio)
-                        Enum.Parse(typeof(KeepAspectRatio), ComboBoxKeepAspectRatio.SelectedItem.ToString());
-
-                int width;
-                int height;
-                switch (ratio)
-                {
-                    case KeepAspectRatio.NONE:
-                        if (TextBoxWidth.Text.Length < 1)
-                        {
-                            MessageBoxFillWidth();
-                            return false;
-                        }
-                        if (TextBoxHeight.Text.Length < 1)
-                        {
-                            MessageBoxFillHeight();
-                            return false;
-                        }
-                        width = Int32.Parse(TextBoxWidth.Text);
-                        height = Int32.Parse(TextBoxHeight.Text);
-                        if (width < 1)
-                        {
-                            ShowMessageBoxWidth();
-                            return false;
-                        }
-                        if (height < 1)
-                        {
-                            ShowMessageBoxHeight();
-                            return false;
-                        }
-                        break;
-                    case KeepAspectRatio.HEIGHT:
-                        if (TextBoxHeight.Text.Length < 1)
-                        {
-                            MessageBoxFillHeight();
-                            return false;
-                        }
-                        height = Int32.Parse(TextBoxHeight.Text);
-                        if (height < 1)
-                        {
-                            ShowMessageBoxHeight();
-                            return false;
-                        }
-                        break;
-                    case KeepAspectRatio.WIDTH:
-                        if (TextBoxWidth.Text.Length < 1)
-                        {
-                            MessageBoxFillWidth();
-                            return false;
-                        }
-                        width = Int32.Parse(TextBoxWidth.Text);
-                        if (width < 1)
-                        {
-                            ShowMessageBoxWidth();
-                            return false;
-                        }
-                        break;
-                }
+                if (!SizeConversionCheckProperties())
+                    return false;
+                
+            }
+            if (FormatAndSizeConversionRadioBox.IsChecked == true)
+            {
+                if (!FormatConversionCheckProperties() || !SizeConversionCheckProperties())
+                    return false;
             }
             if (TextBoxOutputFileName.Text.Length < 1)
             {
@@ -387,6 +388,89 @@ namespace ImageConverter
             }
             return true;
         }
+
+        private bool SizeConversionCheckProperties()
+        {
+            KeepAspectRatio ratio =
+                    (KeepAspectRatio)
+                        Enum.Parse(typeof(KeepAspectRatio), ComboBoxKeepAspectRatio.SelectedItem.ToString());
+
+            int width;
+            int height;
+            switch (ratio)
+            {
+                case KeepAspectRatio.NONE:
+                    if (TextBoxWidth.Text.Length < 1)
+                    {
+                        MessageBoxFillWidth();
+                        return false;
+                    }
+                    if (TextBoxHeight.Text.Length < 1)
+                    {
+                        MessageBoxFillHeight();
+                        return false;
+                    }
+                    width = Int32.Parse(TextBoxWidth.Text);
+                    height = Int32.Parse(TextBoxHeight.Text);
+                    if (width < 1)
+                    {
+                        ShowMessageBoxWidth();
+                        return false;
+                    }
+                    if (height < 1)
+                    {
+                        ShowMessageBoxHeight();
+                        return false;
+                    }
+                    break;
+                case KeepAspectRatio.HEIGHT:
+                    if (TextBoxHeight.Text.Length < 1)
+                    {
+                        MessageBoxFillHeight();
+                        return false;
+                    }
+                    height = Int32.Parse(TextBoxHeight.Text);
+                    if (height < 1)
+                    {
+                        ShowMessageBoxHeight();
+                        return false;
+                    }
+                    break;
+                case KeepAspectRatio.WIDTH:
+                    if (TextBoxWidth.Text.Length < 1)
+                    {
+                        MessageBoxFillWidth();
+                        return false;
+                    }
+                    width = Int32.Parse(TextBoxWidth.Text);
+                    if (width < 1)
+                    {
+                        ShowMessageBoxWidth();
+                        return false;
+                    }
+                    break;
+            }
+            return true;
+        }
+
+        private bool FormatConversionCheckProperties()
+        {
+            Format format = (Format)Enum.Parse(typeof(Format), OutputFormatComboBox.SelectedItem.ToString());
+            if (format == Format.JPEG && TextBoxJPEGCompression.Text.Length < 1)
+            {
+                MessageBox.Show("Fill JPEG compression", "Empty compression", MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return false;
+            }
+            if (format == Format.JPEG && Int32.Parse(TextBoxJPEGCompression.Text) > 100)
+            {
+                MessageBox.Show("Compression has to be mostly 100%", "Wrong compression", MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return false;
+            }
+            return true;
+        }
+
         private void MessageBoxFillWidth()
         {
             MessageBox.Show("Fill width", "Fill width", MessageBoxButton.OK, MessageBoxImage.Information);

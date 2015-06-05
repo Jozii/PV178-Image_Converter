@@ -67,11 +67,11 @@
     <Compile Include="BusinessLogic\BitmapSourceLoader.cs" />
     <Compile Include="BusinessLogic\Enumerations\Format.cs" />
     <Compile Include="BusinessLogic\Enumerations\KeepAspectRatio.cs" />
-    <Compile Include="BusinessLogic\FormatAndSizeConverter.cs" />
+    <Compile Include="BusinessLogic\Converter.cs" />
     <Compile Include="BusinessLogic\FormatConverter.cs" />
     <Compile Include="BusinessLogic\FormatEncoder.cs" />
     <Compile Include="BusinessLogic\IBitmapSourceLoader.cs" />
-    <Compile Include="BusinessLogic\IFormatAndSizeConverter.cs" />
+    <Compile Include="BusinessLogic\IConverter.cs" />
     <Compile Include="BusinessLogic\IFormatConverter.cs" />
     <Compile Include="BusinessLogic\IFormatEncoder.cs" />
     <Compile Include="BusinessLogic\ISizeConverter.cs" />

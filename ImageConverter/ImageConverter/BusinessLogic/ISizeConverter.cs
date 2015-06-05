@@ -6,6 +6,7 @@ namespace ImageConverter.BusinessLogic
 {
     public interface ISizeConverter
     {
-        IEnumerable<string> Resize(IEnumerable<string> files, int width, int height, string outputFileName, KeepAspectRatio ratio, bool enlargeSmallerImages, bool overwriteOutput = false, BackgroundWorker bw = null);
+        bool Resize(string file, int width, int height, string outputFileName, KeepAspectRatio ratio,
+            bool enlargeSmallerImages, Format outputFormat);
     }
 }

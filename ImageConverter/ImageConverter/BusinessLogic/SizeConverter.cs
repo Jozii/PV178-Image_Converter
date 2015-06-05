@@ -12,7 +12,7 @@ using ImageConverter.Logging;
 
 namespace ImageConverter.BusinessLogic
 {
-    class SizeConverter : ISizeConverter
+    public class SizeConverter : ISizeConverter
     {
         private readonly IBitmapSourceLoader _loader;
         private readonly IXMLLog _log;
@@ -35,7 +35,7 @@ namespace ImageConverter.BusinessLogic
             _loader = loader;
             _encoder = encoder;
         }
-        private bool Resize(string file, int width, int height, string outputFileName, KeepAspectRatio ratio, bool enlargeSmallerImages, Format outputFormat)
+        public bool Resize(string file, int width, int height, string outputFileName, KeepAspectRatio ratio, bool enlargeSmallerImages, Format outputFormat)
         {
             if (outputFileName == null)
             {
@@ -130,81 +130,6 @@ namespace ImageConverter.BusinessLogic
             }
         }
 
-        public IEnumerable<string> Resize(IEnumerable<string> files, int width, int height, string outputFileName, KeepAspectRatio ratio,
-            bool enlargeSmallerImages, bool overwriteOutput = false, BackgroundWorker bw = null)
-        {
-            if (files == null)
-            {
-                _log.Error("Resize: files are null");
-                throw new ArgumentNullException("files");
-            }
-            if (string.IsNullOrEmpty(outputFileName))
-            {
-                _log.Error("Resize: outputFileName is null or empty");
-                throw new ArgumentNullException("outputFileName");
-            }
-            if (width < 0)
-            {
-                _log.Error("Resize: Width is less than zero");
-                throw new ArgumentException("width");
-            }
-            if (height < 0)
-            {
-                _log.Error("Resize: Height is less than zero");
-                throw new ArgumentException("height");
-            }
-            List<string> list = new List<string>();
-            int i = 0;
-            int max = files.Count();
-            Format outputFormat;
-            if (max == 1)
-            {
-                outputFileName += Path.GetExtension(files.First());
-                if (!overwriteOutput)
-                {
-                    if (File.Exists(outputFileName))
-                        outputFileName = FileNameGenerator.UniqueFileName(outputFileName, ref i);
-                }
-                outputFormat = FileHelper.GetFormatFromFileName(outputFileName);
-                if (!Resize(files.First(),width,height,outputFileName,ratio,enlargeSmallerImages,outputFormat))
-                {
-                    list.Add(files.First());
-                }
-                if (bw != null)
-                {
-                    bw.ReportProgress(100, files.First());
-                }
-                return list;
-            }
-            int currentFile = 0;
-            foreach (string file in files)
-            {
-                string tempFileName;
-                string extension = Path.GetExtension(file);
-                if (overwriteOutput)
-                {
-                    tempFileName = FileNameGenerator.GetFileName(outputFileName + extension, ref i);
-                }
-                else
-                {
-                    tempFileName = FileNameGenerator.UniqueFileName(outputFileName + extension, ref i);
-                }
-                outputFormat = FileHelper.GetFormatFromFileName(tempFileName);
-                if (!Resize(file, width, height, tempFileName, ratio, enlargeSmallerImages,outputFormat))
-                {
-                    list.Add(file);
-                }
-                currentFile++;
-                if (bw != null)
-                {
-                    int report = (int)((double)currentFile / max * 100.00);
-                    bw.ReportProgress(report, file);
-                }
-            }
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
-            return list;
-        }
         private static BitmapFrame Resize(BitmapFrame photo, int width, int height,BitmapScalingMode scalingMode)
         {
             var group = new DrawingGroup();

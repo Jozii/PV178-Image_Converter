@@ -37,7 +37,7 @@ namespace ImageConverter.BusinessLogic
             _encoder = encoder;
         }
 
-        private bool Convert(string file, Format outputFormat, string outputFileName, int compression = 100, bool overwriteOutput = false)
+        public bool ConvertFormat(string file, Format outputFormat, string outputFileName, int compression = 100, bool overwriteOutput = false)
         {
             if (outputFileName == null)
             {
@@ -99,67 +99,6 @@ namespace ImageConverter.BusinessLogic
                 _log.Error("Convert: " + ex);
                 return false;
             }
-        }
-        
-        public IEnumerable<string> Convert(IEnumerable<string> files, Format outputFormat, string outputFileName,
-            int compression = 100, bool overwriteOutput = false, BackgroundWorker bw = null)
-        {
-            if (files == null)
-            {
-                _log.Error("Convert: Files are null");
-                throw new ArgumentNullException("files");
-            }
-            if (outputFileName == null)
-            {
-                _log.Error("Convert: outputFileName is null");
-                throw new ArgumentNullException("outputFileName");
-            }
-            List<string> list = new List<string>();
-            int i = 0;
-            int max = files.Count();
-            if (max == 1)
-            {
-                if (!overwriteOutput)
-                {
-                    if (File.Exists(outputFileName))
-                        outputFileName = FileNameGenerator.UniqueFileName(outputFileName, ref i);
-                }
-                if (!Convert(files.First(), outputFormat, outputFileName, compression))
-                {
-                    list.Add(files.First());
-                }
-                if (bw != null)
-                {
-                    bw.ReportProgress(100,files.First());
-                }
-                return list;
-            }
-            int currentFile = 0;
-            foreach (string file in files)
-            {
-                string tempFileName;
-                if (overwriteOutput)
-                {
-                    tempFileName = FileNameGenerator.GetFileName(outputFileName, ref i);
-                }
-                else
-                {
-                    tempFileName = FileNameGenerator.UniqueFileName(outputFileName, ref i);
-                }
-                if (!Convert(file, outputFormat, tempFileName, compression))
-                {
-                    list.Add(file);
-                }
-                currentFile++;
-                if (bw != null)
-                {
-                    int report = (int) ((double)currentFile / max * 100.00);
-                    bw.ReportProgress(report,file);
-                }
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-            }
-            return list;
         }
     }
 }

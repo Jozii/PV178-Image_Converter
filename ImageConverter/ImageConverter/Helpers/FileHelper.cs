@@ -50,5 +50,24 @@ namespace ImageConverter.Helpers
                     return Format.JPEG;
             }
         }
+
+        public static string GetExtensionFromFormat(Format format)
+        {
+            switch (format)
+            {
+                case Format.JPEG:
+                    return ".jpeg";
+                case Format.PNG:
+                    return ".png";
+                case Format.Tiff:
+                    return ".tiff";
+                case Format.GIF:
+                    return ".gif";
+                case Format.BMP:
+                    return ".bmp";
+                default:
+                    return null;
+            }
+        }
     }
 }
