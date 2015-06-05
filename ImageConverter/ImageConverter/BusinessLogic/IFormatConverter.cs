@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel;
-using ImageConverter.BusinessLogic.Enumerations;
+﻿using ImageConverter.BusinessLogic.Enumerations;
 
 namespace ImageConverter.BusinessLogic
 {

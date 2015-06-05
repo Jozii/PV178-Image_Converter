@@ -30,6 +30,16 @@ namespace ImageConverter.Helpers
             return sb.ToString();
         }
 
+        public static string GetFilesToMessageBox(IEnumerable<string> list)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (string s in list)
+            {
+                sb.Append(s + '\n');
+            }
+            return sb.ToString();
+        }
+
         public static Format GetFormatFromFileName(string fileName)
         {
             string extension = Path.GetExtension(fileName);

@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ImageConverter.BusinessLogic.Enumerations;
 using ImageConverter.Helpers;
 using ImageConverter.Logging;
@@ -85,7 +83,7 @@ namespace ImageConverter.BusinessLogic
             return list;
         }
         public IEnumerable<string> Resize(IEnumerable<string> files, int width, int height, string outputFileName, KeepAspectRatio ratio,
-            bool enlargeSmallerImages, bool overwriteOutput = false, BackgroundWorker bw = null)
+            bool enlargeSmallerImages = false, bool overwriteOutput = false, BackgroundWorker bw = null)
         {
             if (files == null)
             {
@@ -161,7 +159,7 @@ namespace ImageConverter.BusinessLogic
         }
 
         public IEnumerable<string> ConvertFormatAndSize(IEnumerable<string> files, Format outputFormat, int width, int height, string outputFileName,
-            KeepAspectRatio ratio, bool enlargeSmallerImages, int compression = 100, bool overwriteOutput = false,
+            KeepAspectRatio ratio, bool enlargeSmallerImages = false, int compression = 100, bool overwriteOutput = false,
             BackgroundWorker bw = null)
         {
             if (files == null)

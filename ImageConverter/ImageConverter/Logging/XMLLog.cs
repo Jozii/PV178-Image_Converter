@@ -8,8 +8,7 @@ namespace ImageConverter.Logging
 {
     public class XMLLog : IXMLLog
     {
-        private string _fileName;
-        private XElement _rootElement;
+        private readonly string _fileName;
         public XMLLog(string fileName)
         {
             if (fileName == null)
@@ -19,7 +18,6 @@ namespace ImageConverter.Logging
             
             if (File.Exists(fileName))
             {
-                bool b = ControlFileStructure();
                 if (!ControlFileStructure())
                 {
                     File.Delete(_fileName);
@@ -30,7 +28,6 @@ namespace ImageConverter.Logging
             {
                 CreateFile();
             }
-            _rootElement = XElement.Load(_fileName);
         }
 
         private void CreateFile()

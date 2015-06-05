@@ -82,11 +82,11 @@ namespace ImageConverter
             if (!ControlProperties())
                 return;
             ButtonConvert.IsEnabled = false;
-            if (FormatConversionRadioBox.IsChecked != null && (bool) FormatConversionRadioBox.IsChecked)
+            if (FormatConversionRadioBox.IsChecked == true)
             {
                 ConvertFormat();
             }
-            else if (SizeConversionRadioBox.IsChecked != null && (bool) SizeConversionRadioBox.IsChecked)
+            else if (SizeConversionRadioBox.IsChecked == true)
             {
                 ConvertSize();
             }
@@ -194,15 +194,15 @@ namespace ImageConverter
                 case KeepAspectRatio.NONE:
                     width = Int32.Parse(TextBoxWidth.Text);
                     height = Int32.Parse(TextBoxHeight.Text);
-                    _xmlLog.Info("Convert size " + FileHelper.GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " to width: " + width + " and height " + height);
+                    _xmlLog.Info("Convert size " + FileHelper.GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " to given width: " + width + " and height " + height);
                     break;
                 case KeepAspectRatio.WIDTH:
                     width = Int32.Parse(TextBoxWidth.Text);
-                    _xmlLog.Info("Convert size " + FileHelper.GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " to width: " + width);
+                    _xmlLog.Info("Convert size " + FileHelper.GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " to given width: " + width);
                     break;
                 case KeepAspectRatio.HEIGHT:
                     height = Int32.Parse(TextBoxHeight.Text);
-                    _xmlLog.Info("Convert size " + FileHelper.GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " to height " + height);
+                    _xmlLog.Info("Convert size " + FileHelper.GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " to given height " + height);
                     break;
             }
             string outputFileName = _outputDirectory + "\\" + TextBoxOutputFileName.Text;
@@ -230,15 +230,15 @@ namespace ImageConverter
                 case KeepAspectRatio.NONE:
                     width = Int32.Parse(TextBoxWidth.Text);
                     height = Int32.Parse(TextBoxHeight.Text);
-                    _xmlLog.Info("Convert format and size " + FileHelper.GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " with format " + format + " to width: " + width + " and height " + height);
+                    _xmlLog.Info("Convert format and size " + FileHelper.GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " with format " + format + " to given width: " + width + " and height " + height);
                     break;
                 case KeepAspectRatio.WIDTH:
                     width = Int32.Parse(TextBoxWidth.Text);
-                    _xmlLog.Info("Convert format and size " + FileHelper.GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " with format " + format + " to width: " + width);
+                    _xmlLog.Info("Convert format and size " + FileHelper.GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " with format " + format + " to given width: " + width);
                     break;
                 case KeepAspectRatio.HEIGHT:
                     height = Int32.Parse(TextBoxHeight.Text);
-                    _xmlLog.Info("Convert format and size " + FileHelper.GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " with format " + format + " to height " + height);
+                    _xmlLog.Info("Convert format and size " + FileHelper.GetFilesToString(_files) + "in directory " + Path.GetDirectoryName(_files.FirstOrDefault()) + " with format " + format + " to given height " + height);
                     break;
             }
             string outputFileName = _outputDirectory + "\\" + TextBoxOutputFileName.Text;
@@ -263,12 +263,7 @@ namespace ImageConverter
             }
             else
             {
-                StringBuilder sb = new StringBuilder();
-                foreach (string s in result)
-                {
-                    sb.Append(s + '\n');
-                }
-                MessageBox.Show("These files were not converted\n" + sb.ToString(),"Error in converting files",MessageBoxButton.OK,MessageBoxImage.Error);
+                MessageBox.Show("These files were not converted\n" + FileHelper.GetFilesToMessageBox(result),"Error in converting files",MessageBoxButton.OK,MessageBoxImage.Error);
                 _xmlLog.Debug("Not converted files: " + FileHelper.GetFilesToString(result));
             }
             LabelProcessedFiles.Content = "No file";
@@ -379,10 +374,9 @@ namespace ImageConverter
                     MessageBoxImage.Information);
                 return false;
             }
-            if (Path.GetDirectoryName(_files.FirstOrDefault()) == _outputDirectory &&
-                CheckBoxOverwriteExistingFiles.IsChecked == true)
+            if (Path.GetDirectoryName(_files.FirstOrDefault()) == _outputDirectory)
             {
-                MessageBox.Show("Select another output directory", "Output directory", MessageBoxButton.OK,
+                MessageBox.Show("Input and output directory cannot be the same", "Output directory", MessageBoxButton.OK,
                     MessageBoxImage.Information);
                 return false;
             }

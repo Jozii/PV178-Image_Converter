@@ -13,6 +13,8 @@ namespace ImageConverter.BusinessLogic
         public void EncodeIntoJPEG(string outputFile, BitmapSource source, int compression)
         {
             VaryQualityLevel(outputFile, source, compression);
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
         }
 
         public void EncodeIntoPNG(string outputFile, BitmapSource source)
@@ -66,11 +68,8 @@ namespace ImageConverter.BusinessLogic
         {
             Bitmap bmp = GetBitmap(source);
             ImageCodecInfo jpgEncoder = GetEncoder(ImageFormat.Jpeg);
-            Encoder myEncoder =
-                Encoder.Quality;
-
+            Encoder myEncoder = Encoder.Quality;
             EncoderParameters myEncoderParameters = new EncoderParameters(1);
-
             EncoderParameter myEncoderParameter = new EncoderParameter(myEncoder, (Int64)compression);
             myEncoderParameters.Param[0] = myEncoderParameter;
             bmp.Save(outputFile, jpgEncoder, myEncoderParameters);
@@ -78,7 +77,6 @@ namespace ImageConverter.BusinessLogic
         private static ImageCodecInfo GetEncoder(ImageFormat format)
         {
             ImageCodecInfo[] codecs = ImageCodecInfo.GetImageDecoders();
-
             foreach (ImageCodecInfo codec in codecs)
             {
                 if (codec.FormatID == format.Guid)
