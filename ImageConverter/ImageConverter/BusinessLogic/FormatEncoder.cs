@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using Point = System.Drawing.Point;
@@ -71,8 +66,8 @@ namespace ImageConverter.BusinessLogic
         {
             Bitmap bmp = GetBitmap(source);
             ImageCodecInfo jpgEncoder = GetEncoder(ImageFormat.Jpeg);
-            System.Drawing.Imaging.Encoder myEncoder =
-                System.Drawing.Imaging.Encoder.Quality;
+            Encoder myEncoder =
+                Encoder.Quality;
 
             EncoderParameters myEncoderParameters = new EncoderParameters(1);
 
