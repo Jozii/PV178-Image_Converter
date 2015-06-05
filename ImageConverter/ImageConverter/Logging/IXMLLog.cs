@@ -1,4 +1,4 @@
-﻿namespace ImageConverter.BusinessLogic
+﻿namespace ImageConverter.Logging
 {
     public interface IXMLLog
     {

@@ -8,6 +8,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using ImageConverter.BusinessLogic.Enumerations;
 using ImageConverter.Helpers;
+using ImageConverter.Logging;
 
 namespace ImageConverter.BusinessLogic
 {
