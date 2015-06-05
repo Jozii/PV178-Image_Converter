@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using ImageConverter.BusinessLogic.Enumerations;
 
 namespace ImageConverter.Helpers
 {
@@ -29,6 +30,27 @@ namespace ImageConverter.Helpers
                 sb.Append(Path.GetFileName(s) + " ");
             }
             return sb.ToString();
+        }
+
+        public static Format GetFormatFromFileName(string fileName)
+        {
+            string extension = Path.GetExtension(fileName);
+            switch (extension)
+            {
+                case ".jpeg":
+                case ".jpg":
+                    return Format.JPEG;
+                case ".png":
+                    return Format.PNG;
+                case ".tiff":
+                    return Format.Tiff;
+                case ".gif":
+                    return Format.GIF;
+                case ".bmp":
+                    return Format.BMP;
+                default:
+                    return Format.JPEG;
+            }
         }
     }
 }

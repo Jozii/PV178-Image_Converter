@@ -73,7 +73,7 @@ namespace ImageConverter.BusinessLogic
                         _encoder.EncodeIntoBMP(outputFileName, source);
                         break;
                     default:
-                        throw new FormatException("outputFormat");
+                        return false;
                 }
                 return true;
             }

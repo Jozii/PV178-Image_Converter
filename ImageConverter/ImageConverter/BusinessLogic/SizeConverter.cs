@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using ImageConverter.BusinessLogic.Enumerations;
+using ImageConverter.Helpers;
 
 namespace ImageConverter.BusinessLogic
 {
@@ -33,7 +34,7 @@ namespace ImageConverter.BusinessLogic
             _loader = loader;
             _encoder = encoder;
         }
-        private bool Resize(string file, int width, int height, string outputFileName, KeepAspectRatio ratio, bool enlargeSmallerImages)
+        private bool Resize(string file, int width, int height, string outputFileName, KeepAspectRatio ratio, bool enlargeSmallerImages, Format outputFormat)
         {
             if (outputFileName == null)
             {
@@ -82,23 +83,21 @@ namespace ImageConverter.BusinessLogic
                         throw new ArgumentException("ratio");
                 }
                 BitmapFrame result = Resize(BitmapFrame.Create(source), width, height, BitmapScalingMode.HighQuality);
-                string extension = Path.GetExtension(file);
-                switch (extension)
+                switch (outputFormat)
                 {
-                    case ".jpeg":
-                    case ".jpg":
+                    case Format.JPEG:
                         _encoder.EncodeIntoJPEG(outputFileName, result, 100);
                         break;
-                    case ".png":
+                    case Format.PNG:
                         _encoder.EncodeIntoPNG(outputFileName, result);
                         break;
-                    case ".tiff":
+                    case Format.Tiff:
                         _encoder.EncodeIntoTiff(outputFileName, result);
                         break;
-                    case ".gif":
+                    case Format.GIF:
                         _encoder.EncodeIntoGIF(outputFileName, result);
                         break;
-                    case ".bmp":
+                    case Format.BMP:
                         _encoder.EncodeIntoBMP(outputFileName, result);
                         break;
                     default:
@@ -156,6 +155,7 @@ namespace ImageConverter.BusinessLogic
             List<string> list = new List<string>();
             int i = 0;
             int max = files.Count();
+            Format outputFormat;
             if (max == 1)
             {
                 outputFileName += Path.GetExtension(files.First());
@@ -164,7 +164,8 @@ namespace ImageConverter.BusinessLogic
                     if (File.Exists(outputFileName))
                         outputFileName = FileNameGenerator.UniqueFileName(outputFileName, ref i);
                 }
-                if (!Resize(files.First(),width,height,outputFileName,ratio,enlargeSmallerImages))
+                outputFormat = FileHelper.GetFormatFromFileName(outputFileName);
+                if (!Resize(files.First(),width,height,outputFileName,ratio,enlargeSmallerImages,outputFormat))
                 {
                     list.Add(files.First());
                 }
@@ -187,7 +188,8 @@ namespace ImageConverter.BusinessLogic
                 {
                     tempFileName = FileNameGenerator.UniqueFileName(outputFileName + extension, ref i);
                 }
-                if (!Resize(file, width, height, tempFileName, ratio, enlargeSmallerImages))
+                outputFormat = FileHelper.GetFormatFromFileName(tempFileName);
+                if (!Resize(file, width, height, tempFileName, ratio, enlargeSmallerImages,outputFormat))
                 {
                     list.Add(file);
                 }

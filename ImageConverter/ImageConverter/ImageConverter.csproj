@@ -67,7 +67,7 @@
     <Compile Include="BusinessLogic\BitmapSourceLoader.cs" />
     <Compile Include="BusinessLogic\Enumerations\Format.cs" />
     <Compile Include="BusinessLogic\Enumerations\KeepAspectRatio.cs" />
-    <Compile Include="BusinessLogic\FileNameGenerator.cs" />
+    <Compile Include="Helpers\FileNameGenerator.cs" />
     <Compile Include="BusinessLogic\FormatConverter.cs" />
     <Compile Include="BusinessLogic\FormatEncoder.cs" />
     <Compile Include="BusinessLogic\IBitmapSourceLoader.cs" />
